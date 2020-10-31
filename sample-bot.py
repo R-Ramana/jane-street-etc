@@ -102,11 +102,11 @@ def main():
         print(message)
         if message['type'] == 'book':
             if message['symbol'] == 'BOND':
-                if message['buy'][0][0] > 1000 and shares['BOND'] > 0:
+                if len(message['buy']) > 0 and message['buy'][0][0] > 1000 and shares['BOND'] > 0:
                     sell(exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
                     shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
                     # print(f'sold {message['buy'][0][1]} BOND at {message['buy'][0][0]}')
-                if message['sell'][0][0] < 1000:
+                if len(message['sell']) > 0 and message['sell'][0][0] < 1000:
                     buy(exchange, 'BOND', message['sell'][0][0], message['sell'][0][1])
                     shares['BOND'] += message['sell'][0][1]
                     # print(f'bought {message['sell'][0][1]} BOND at {message['sell'][0][0]}')
