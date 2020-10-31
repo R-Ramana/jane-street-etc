@@ -23,11 +23,15 @@ test_mode = True
 # 0 is prod-like
 # 1 is slower
 # 2 is empty
-test_exchange_index=2
+test_exchange_index=1
 prod_exchange_hostname="production"
 
 port=25000 + (test_exchange_index if test_mode else 0)
 exchange_hostname = "test-exch-" + team_name if test_mode else prod_exchange_hostname
+
+buy_orders = dict()
+sell_orders = dict()
+shares = dict()
 
 # ~~~~~============== NETWORKING CODE ==============~~~~~
 def connect():
@@ -42,7 +46,7 @@ def write_to_exchange(exchange, obj):
 def read_from_exchange(exchange):
     return json.loads(exchange.readline())
 
-# ~~~~~============== NETWORKING CODE ==============~~~~~
+# ~~~~~============== MESSAGES CODE ==============~~~~~
 def convert(exchange, symbol, size, dir):
     payload = {
         "type": "convert",
@@ -58,6 +62,43 @@ def convert_to(exchange, symbol, size):
 
 def convert_from(exchange, symbol, size):
     convert(exchange, symbol, size, "SELL")
+    
+def buy(exchange, symbol, price, size):
+    order_id = str(uuid.uuid4())
+    
+    payload = {
+        "type": "add",
+        "order_id": order_id,
+        "symbol": symbol,
+        "dir": "BUY",
+        "price": price,
+        "size": size
+        }
+
+    buy_orders[symbol] = [price, size, order_id]
+    write_to_exchange(exchange, payload)
+
+def sell(exchange, symbol, price, size):
+    order_id = str(uuid.uuid4())
+    
+    payload = {
+        "type": "add",
+        "order_id": str(uuid.uuid4()),
+        "symbol": symbol,
+        "dir": "SELL",
+        "price": price,
+        "size": size
+        }
+    
+    sell_orders[symbol] = [price, size, order_id]
+    write_to_exchange(exchange, payload)
+
+def cancel(exchange, order_id):
+    payload = {
+        "type" : "cancel",
+        "order_id" : order_id
+    }
+    write_to_exchange(exchange, payload)
 
 # ~~~~~============== MAIN LOOP ==============~~~~~
 
@@ -72,6 +113,18 @@ def main():
     print("The exchange replied:", hello_from_exchange, file=sys.stderr)
     while True:
         message = read_from_exchange(exchange)
+        print(message)
+        if message['type'] == 'book':
+            if message['symbol'] == 'BOND':
+                if message['buy'][0][0] > 1000 and shares['BOND'] > 0:
+                    sell(exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
+                    shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
+                    print(f'sold {message['buy'][0][1]} BOND at {message['buy'][0][0]}')
+                if message['sell'][0][0] < 1000:
+                    buy(exchange, 'BOND', message['sell'][0][0], message['sell'][0][1])
+                    shares['BOND'] += message['sell'][0][1]
+                    print(f'bought {message['sell'][0][1]} BOND at {message['sell'][0][0]}')
+
         if(message["type"] == "close"):
             print("The round has ended")
             break
