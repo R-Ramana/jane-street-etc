@@ -122,10 +122,11 @@ def getStockFairPrice(bookMessage, stockFairPrices):
     prevFairPrice = stockFairPrices[symbol]
 
     if (prevFairPrice > 0):
-        
         fairPrice = (prevFairPrice + currentFairPrice) / 2
+        stockFairPrices[symbol] = fairPrice
         return fairPrice
     
+    stockFairPrices[symbol] = currentFairPrice
     return currentFairPrice
 
 def getXLFFairPrice(stockFairPrices):
@@ -248,7 +249,7 @@ def main():
             if message['symbol'] == "XLF": 
                 print(f'XLF, {getXLFFairPrice(stockFairPrices)}')
 
-        if(message["type"] == "close"):
+        if(message["type"] == "close"):git p
             print("The round has ended")
             break
 
