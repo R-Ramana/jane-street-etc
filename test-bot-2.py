@@ -199,7 +199,7 @@ def check_ADR(buy_orders, sell_orders, shares, counter, exchange, message):
         counter = convert_from(shares,counter,exchange,'VALE',5)
         return counter
     elif shares['VALBZ'] > shares['VALE'] + 10:
-        counter = convert_to(shares, counter, exchange, 'VALBZ',5)\
+        counter = convert_to(shares, counter, exchange, 'VALBZ',5)
         return counter
 
     price_valbz = sum(best_prices['VALBZ'])/2
