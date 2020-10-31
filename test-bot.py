@@ -35,9 +35,9 @@ shares = dict()
 shares['BOND'] = 0
 counter = 0
 best_prices = dict()
-stockFairPrices = {"VALBZ" : 0, "GS": 0, "MS": 0, "WFC": 0}
+stockFairPrices = {"GS": 0, "MS": 0, "WFC": 0}
 
-stocks = ["VALBZ", "GS", "MS", "WFC"]
+stocks = ["GS", "MS", "WFC"]
 
 # ~~~~~============== NETWORKING CODE ==============~~~~~
 def connect():
@@ -84,14 +84,13 @@ def buy(buy_orders, counter, exchange, symbol, price, size):
         "size": size
         }
 
-    buy_orders.append(counter)
+    # buy_orders.append(counter)
     write_to_exchange(exchange, payload)
 
     return counter
 
 def sell(sell_orders, counter, exchange, symbol, price, size):
     counter += 1
-    
     payload = {
         "type": "add",
         "order_id": counter,
@@ -100,8 +99,7 @@ def sell(sell_orders, counter, exchange, symbol, price, size):
         "price": price,
         "size": size
         }
-    
-    sell_orders.append(counter)
+    # sell_orders.append(counter)
     write_to_exchange(exchange, payload)
 
     return counter
@@ -113,44 +111,11 @@ def cancel(exchange, order_id):
     }
     write_to_exchange(exchange, payload)
 
-def getStockFairPrice(bookMessage, stockFairPrices):
-
-    symbol = bookMessage["symbol"]
-    maxBuyPrice = bookMessage['buy'][0][0]
-    minSellPrice = bookMessage['sell'][0][0]
-    currentFairPrice = (maxBuyPrice + minSellPrice) / 2
-    prevFairPrice = stockFairPrices[symbol]
-
-    if (prevFairPrice > 0):
-        
-        fairPrice = (prevFairPrice + currentFairPrice) / 2
-        return fairPrice
-    
-    return currentFairPrice
-
 def getXLFFairPrice(stockFairPrices):
     return 0.3*1000 + 0.2*stockFairPrices["GS"] + 0.3*stockFairPrices["MS"] + 0.2*stockFairPrices["WFC"]
 
 def getVALEFairPrice(stockFairPrices):
     return stockFairPrices["VALBZ"]
-
-def sellHigherThanFairPrice(sell_orders, counter, exchange, symbol, message, shares):
-
-    fairPrice = getStockFairPrice(message, stockFairPrices)
-
-    if len(message['buy']) > 0 and message['buy'][0][0] > fairPrice and shares[symbol] > 0:
-        counter = sell(sell_orders, counter, exchange, symbol, message['buy'][0][0], message['buy'][0][1])
-        shares[symbol] -= message['buy'][0][1] if shares[symbol] >= message['buy'][0][1] else shares[symbol]
-        print(shares)
-
-def buyLowerThanFairPrice(buy_orders, counter, exchange, symbol, message, shares):
-
-    fairPrice = getStockFairPrice(message, stockFairPrices)
-
-    if len(message['sell']) > 0 and message['sell'][0][0] <= fairPrice:
-        counter = buy(buy_orders, counter, exchange, symbol, message['sell'][0][0], message['sell'][0][1])
-        shares[symbol] += message[symbol][0][1]
-        print(shares)
 
 def cancelPastOrders(sell_orders):
     if len(sell_orders) > 0: sell_orders.popleft()
@@ -209,7 +174,6 @@ def main():
     print("The exchange replied:", hello_from_exchange, file=sys.stderr)
     shares = dict()
     shares['BOND'] = 0
-    shares['VALBZ'] = 0
     shares['GS'] = 0
     shares['MS'] = 0
     shares['WFC'] = 0
@@ -239,13 +203,14 @@ def main():
 
 
             if message['symbol'] in stocks:
-                price = getStockFairPrice(message, stockFairPrices)
-                print(price)
+                print(message)
+                price = getAndUpdateStockFairPrice(message, stockFairPrices)
+                print(f'Symbol: {message["symbol"]}, {price}')
 
-                sellHigherThanFairPrice(sell_orders, counter, exchange, message['symbol'], message, shares)
-                buyLowerThanFairPrice(sell_orders, counter, exchange, message['symbol'], message, shares)
+                sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares)
+                buyStockLowerThanFairPrice(sell_orders, counter, exchange, message, shares)
 
-            if message['symbol'] == "XLF": 
+            if message['symbol'] == "XLF":
                 print(f'XLF, {getXLFFairPrice(stockFairPrices)}')
 
         if(message["type"] == "close"):

@@ -66,12 +66,12 @@ def convert(counter, exchange, symbol, size, dir):
 
     return counter
 
-def convert_to(counter, exchange, symbol, size):
+def convert_to(shares, counter, exchange, symbol, size):
     shares[symbol] += size
     shares['VALBZ'] -= size
     return convert(counter, exchange, symbol, size, "BUY")
 
-def convert_from(counter, exchange, symbol, size):
+def convert_from(shares, counter, exchange, symbol, size):
     shares[symbol] -= size
     shares['VALBZ'] += size
     return convert(counter, exchange, symbol, size, "SELL")
@@ -203,6 +203,8 @@ def main():
     print("The exchange replied:", hello_from_exchange, file=sys.stderr)
     shares = dict()
     shares['BOND'] = 0
+    shares['VALBZ'] = 0
+    shares['VALE'] = 0
     counter = 0
     buy_orders = deque()
     sell_orders = deque()
@@ -228,7 +230,17 @@ def main():
                     shares['BOND'] += message['sell'][0][1]
                     print(shares)
             if message['symbol'] == 'VALE' or message['symbol'] == 'VALBZ':
-                counter = check_etf(counter, exchange, message)
+                if shares['VALBZ'] == 0:
+                    if message['symbol'] == 'VALBZ':
+                        counter = buy(buy_orders, counter, exchange, 'VALBZ', message['sell'][0][0], message['sell'][0][1])
+                        shares['VALBZ'] += message['sell'][0][1]
+                if 'VALE' in shares:
+                    print (shares)
+                    counter = convert_from(shares, counter, exchange, 'VALE', 1)
+                elif 'VALBZ' in shares:
+                    print (shares)
+                    counter = convert_to(shares, counter, exchange, 'VALE', 1)
+                #counter = check_etf(counter, exchange, message)
 
         if(message["type"] == "close"):
             print("The round has ended")

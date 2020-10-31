@@ -12,7 +12,8 @@ import socket
 import json
 from collections import deque 
 from networking import connect, write_to_exchange, read_from_exchange
-from exchange import convert_to, convert_from, buy, sell
+from exchange import convert_to, convert_from, buy, sell, cancel
+from bond import *
 
 # ~~~~~============== CONFIGURATION  ==============~~~~~
 # replace REPLACEME with your team name!
@@ -32,6 +33,8 @@ port=25000 + (test_exchange_index if test_mode else 0)
 exchange_hostname = "test-exch-" + team_name if test_mode else prod_exchange_hostname
 
 stockFairPrices = {"VALBZ" : 0, "GS": 0, "MS": 0, "WFC": 0}
+stocks = ["VALBZ", "GS", "MS", "WFC"]
+best_prices = dict()
 
 # ~~~~~============== MESSAGES CODE ==============~~~~~
 def getStockFairPrice(bookMessage, stockFairPrices):
@@ -55,14 +58,41 @@ def getXLFFairPrice(stockFairPrices):
 def getVALEFairPrice(stockFairPrices):
     return stockFairPrices["VALBZ"]
 
-def sellHigherThanFairPrice(sell_orders, counter, exchange, symbol, message, shares):
-    if len(message['buy']) > 0 and message['buy'][0][0] > 1000 and shares['BOND'] > 0:
-        counter = sell(sell_orders, counter, exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
-        shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
+def sellHigherThanFairPrice(sell_orders, counter, exchange, message, shares):
+
+    fairPrice = 1000 if message['symbol'] == 'BOND' else 0
+
+    if len(message['buy']) > 0 and message['buy'][0][0] > fairPrice and shares[message['symbol']] > 0:
+        counter = sell(sell_orders, counter, exchange, message['symbol'], message['buy'][0][0], message['buy'][0][1])
+        shares[message['symbol']] -= message['buy'][0][1] if shares[message['symbol']] >= message['buy'][0][1] else shares[message['symbol']]
         print(shares)
 
-def cancelPastOrders(sell_orders):
-    if len(sell_orders) > 0: sell_orders.popleft()
+def buyLowerThanFairPrice(buy_orders, counter, exchange, message, shares):
+
+    fairPrice = 1000 if message['symbol'] == 'BOND' else 0
+
+    if len(message['sell']) > 0 and message['sell'][0][0] < fairPrice:
+        counter = buy(buy_orders, counter, exchange, message['symbol'], message['sell'][0][0], message['sell'][0][1])
+        shares[message['symbol']] += message['sell'][0][1]
+        print(shares)
+
+def add_to_market(message):
+    symbol = message["symbol"]
+    if (len(message['buy']) > 0):
+        buy_price = message['buy'][0][0]
+    elif symbol in best_prices:
+        buy_price = best_prices[symbol][0]
+    else:
+        buy_price = 0
+
+    if (len(message['sell']) > 0):
+        sell_price = message['sell'][0][0]
+    elif symbol in best_prices:
+        sell_price = best_prices[symbol][1]
+    else:
+        sell_price = 0
+
+    best_prices[symbol] = (buy_price, sell_price)   
 
 # ~~~~~============== MAIN LOOP ==============~~~~~
 
@@ -77,6 +107,10 @@ def main():
     print("The exchange replied:", hello_from_exchange, file=sys.stderr)
     shares = dict()
     shares['BOND'] = 0
+    shares['VALBZ'] = 0
+    shares['GS'] = 0
+    shares['MS'] = 0
+    shares['WFC'] = 0
     counter = 0
     buy_orders = deque()
     sell_orders = deque()
@@ -87,23 +121,17 @@ def main():
             break
 
         if message['type'] == 'book':
-            if message['symbol'] == 'BOND': print(message)
+            add_to_market(message)
+            if message['symbol'] == 'BOND': print(best_prices)
         elif message['type'] == 'trade': continue
         else:
             print(message)
             continue
+        
         if message['type'] == 'book':
             if message['symbol'] == 'BOND':
-                if len(message['buy']) > 0 and message['buy'][0][0] > 1000 and shares['BOND'] > 0:
-                    counter = sell(sell_orders, counter, exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
-                    shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
-                    print(shares)
-                if len(message['sell']) > 0 and message['sell'][0][0] < 1000:
-                    counter = buy(buy_orders, counter, exchange, 'BOND', message['sell'][0][0], message['sell'][0][1])
-                    shares['BOND'] += message['sell'][0][1]
-                    print(shares)
-
-        
+                sellBondHigherThanFairPrice(sell_orders, counter, exchange, message, shares)
+                buyBondLowerThanFairPrice(buy_orders, counter, exchange, message, shares)
 
 if __name__ == "__main__":
     main()
