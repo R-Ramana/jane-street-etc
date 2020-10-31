@@ -38,21 +38,6 @@ stockFairPrices = {"GS": 0, "MS": 0, "WFC": 0}
 best_prices = dict()
 
 # ~~~~~============== MESSAGES CODE ==============~~~~~
-def getStockFairPrice(bookMessage, stockFairPrices):
-
-    symbol = bookMessage["symbol"]
-    maxBuyPrice = bookMessage['buy'][0][0]
-    minSellPrice = bookMessage['sell'][0][0]
-    currentFairPrice = (maxBuyPrice + minSellPrice) / 2
-    prevFairPrice = stockFairPrices[symbol]
-
-    if (prevFairPrice > 0):
-        
-        fairPrice = (prevFairPrice + currentFairPrice) / 2
-        return symbol, fairPrice
-    
-    return symbol, currentFairPrice
-
 def getXLFFairPrice(stockFairPrices):
     return 0.3*1000 + 0.2*stockFairPrices["GS"] + 0.3*stockFairPrices["MS"] + 0.2*stockFairPrices["WFC"]
 
