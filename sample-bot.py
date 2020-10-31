@@ -107,14 +107,20 @@ def main():
             if message['symbol'] == 'BOND':
                 if len(message['buy']) > 0 and message['buy'][0][0] > 1000 and shares['BOND'] > 0:
                     sell(counter, exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
-                    shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
+                    if read_from_exchange(exchange)['type'] == 'ack':
+                        if read_from_exchange(exchange)['type'] == 'fill':
+                            shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
+                        else:
+                            cancel(exchange, counter)
                     print(shares)
-                    # print(f'sold {message['buy'][0][1]} BOND at {message['buy'][0][0]}')
-                if len(message['sell']) > 0 and message['sell'][0][0] < 1000:
+                if len(message['sell']) > 0 and message['sell'][0][0] <= 1000:
                     buy(counter, exchange, 'BOND', message['sell'][0][0], message['sell'][0][1])
-                    shares['BOND'] += message['sell'][0][1]
+                    if read_from_exchange(exchange)['type'] == 'ack':
+                        if read_from_exchange(exchange)['type'] == 'fill':
+                            shares['BOND'] += message['sell'][0][1]
+                        else:
+                            cancel(exchange, counter)
                     print(shares)
-                    # print(f'bought {message['sell'][0][1]} BOND at {message['sell'][0][0]}')
 
         if(message["type"] == "close"):
             print("The round has ended")
