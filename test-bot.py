@@ -219,6 +219,14 @@ def main():
             if message['symbol'] == 'VALE' or message['symbol'] == 'VALBZ':
                 counter = check_etf(counter, exchange, message)
 
+
+            if message['symbol'] in stocks:
+                symbol, price = getStockFairPrice()
+                print(f'{symbol}, {price}')
+
+            if message['symbol'] == "XFC": 
+                print(f'XLF, {getXLFFairPrice()})
+
         if(message["type"] == "close"):
             print("The round has ended")
             break
