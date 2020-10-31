@@ -37,6 +37,8 @@ counter = 0
 best_prices = dict()
 stockFairPrices = {"VALBZ" : 0, "GS": 0, "MS": 0, "WFC": 0}
 
+stocks = ["VALBZ", "GS", "MS", "WFC"]
+
 # ~~~~~============== NETWORKING CODE ==============~~~~~
 def connect():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -207,6 +209,10 @@ def main():
     print("The exchange replied:", hello_from_exchange, file=sys.stderr)
     shares = dict()
     shares['BOND'] = 0
+    shares['VALBZ'] = 0
+    shares['GS'] = 0
+    shares['MS'] = 0
+    shares['WFC'] = 0
     counter = 0
     buy_orders = deque
     sell_orders = deque
