@@ -11,6 +11,7 @@ import sys
 import socket
 import json
 from collections import deque 
+from cancel import *
 
 # ~~~~~============== CONFIGURATION  ==============~~~~~
 # replace REPLACEME with your team name!
@@ -130,16 +131,6 @@ def sellHigherThanFairPrice(sell_orders, counter, exchange, symbol, message, sha
         counter = sell(sell_orders, counter, exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
         shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
         print(shares)
-
-def cancelPastOrders(exchange, sell_orders, buy_orders, i):
-    if i > 5:
-        if len(sell_orders) > 0: 
-            cancel(exchange, sell_orders.popleft())
-        if len(buy_orders) > 0: 
-            cancel(exchange, buy_orders.popleft())
-        return 0
-
-    else: return i
 
 # ~~~~~============== MAIN LOOP ==============~~~~~
 

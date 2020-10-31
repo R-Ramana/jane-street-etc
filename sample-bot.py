@@ -76,16 +76,6 @@ def buyLowerThanFairPrice(buy_orders, counter, exchange, message, shares):
         shares[message['symbol']] += message['sell'][0][1]
         print(shares)
 
-def cancelPastOrders(exchange, sell_orders, buy_orders, i):
-    if i > 5:
-        if len(sell_orders) > 0: 
-            cancel(exchange, sell_orders.popleft())
-        if len(buy_orders) > 0: 
-            cancel(exchange, buy_orders.popleft())
-        return 0
-
-    else: return i
-
 def add_to_market(message):
     symbol = message["symbol"]
     if (len(message['buy']) > 0):
