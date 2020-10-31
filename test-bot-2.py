@@ -158,7 +158,7 @@ def add_to_market(message):
         buy_price = 0
 
     if (len(message['sell']) > 0):
-        sell_price = message['sell'][0]
+        sell_price = message['sell'][0][0]
     elif symbol in best_prices:
         sell_price = best_prices[symbol][1]
     else:
