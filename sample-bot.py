@@ -119,11 +119,11 @@ def main():
                 if message['buy'][0][0] > 1000 and shares['BOND'] > 0:
                     sell(exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
                     shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
-                    print(f'sold {message['buy'][0][1]} BOND at {message['buy'][0][0]}')
+                    # print(f'sold {message['buy'][0][1]} BOND at {message['buy'][0][0]}')
                 if message['sell'][0][0] < 1000:
                     buy(exchange, 'BOND', message['sell'][0][0], message['sell'][0][1])
                     shares['BOND'] += message['sell'][0][1]
-                    print(f'bought {message['sell'][0][1]} BOND at {message['sell'][0][0]}')
+                    # print(f'bought {message['sell'][0][1]} BOND at {message['sell'][0][0]}')
 
         if(message["type"] == "close"):
             print("The round has ended")
