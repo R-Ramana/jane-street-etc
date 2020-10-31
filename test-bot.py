@@ -239,7 +239,7 @@ def main():
 
 
             if message['symbol'] in stocks:
-                symbol, price = getStockFairPrice(message, stockFairPrices)
+                price = getStockFairPrice(message, stockFairPrices)
                 print(f'{symbol}, {price}')
 
                 sellHigherThanFairPrice(sell_orders, counter, exchange, message['symbol'], message, shares)
