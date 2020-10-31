@@ -103,6 +103,14 @@ def cancel(exchange, order_id):
     }
     write_to_exchange(exchange, payload)
 
+def getFairPrice(bookMessage):
+    maxBuyPrice = bookMessage['buy'][0][0]
+    minSellPrice = bookMessage['sell'][0][0]
+
+    fairPrice = (maxBuyPrice + minSellPrice)
+
+    return bookMessage['symbol'], fairPrice
+
 # ~~~~~============== MAIN LOOP ==============~~~~~
 
 def main():
