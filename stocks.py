@@ -9,7 +9,7 @@ def sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares
         fairPrice = getAndUpdateStockFairPrice(message, stockFairPrices)
         if message['buy'][0][0] > fairPrice and fairPrice > 0:
             maxSell = abs(-100 - shares[symbol])
-            size =  maxSell if maxSell < message['sell'][0][1] else message['sell'][0][1]
+            size =  maxSell if maxSell < message['buy'][0][1] else message['buy'][0][1]
             counter = sell(sell_orders, counter, exchange, symbol, message['buy'][0][0], size)
             shares[symbol] -= size
             print(shares)
