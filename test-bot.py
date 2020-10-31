@@ -91,7 +91,6 @@ def buy(buy_orders, counter, exchange, symbol, price, size):
 
 def sell(sell_orders, counter, exchange, symbol, price, size):
     counter += 1
-    
     payload = {
         "type": "add",
         "order_id": counter,
@@ -100,7 +99,6 @@ def sell(sell_orders, counter, exchange, symbol, price, size):
         "price": price,
         "size": size
         }
-    
     sell_orders.append(counter)
     write_to_exchange(exchange, payload)
 
@@ -122,10 +120,9 @@ def getAndUpdateStockFairPrice(bookMessage, stockFairPrices):
     prevFairPrice = stockFairPrices[symbol]
 
     if (prevFairPrice > 0):
-        fairPrice = (prevFairPrice + currentFairPrice) / 2
+        fairPrice = prevFairPrice * 0.9 + currentFairPrice * 0.1
         stockFairPrices[symbol] = fairPrice
         return prevFairPrice
-    
     stockFairPrices[symbol] = currentFairPrice
     return currentFairPrice
 
@@ -144,6 +141,7 @@ def sellHigherThanFairPrice(sell_orders, counter, exchange, message, shares):
         counter = sell(sell_orders, counter, exchange, symbol, message['buy'][0][0], message['buy'][0][1])
         shares[symbol] -= message['buy'][0][1] if shares[symbol] >= message['buy'][0][1] else shares[symbol]
         print(shares)
+        print("SOMETHING SOLD!")
 
 def buyLowerThanFairPrice(buy_orders, counter, exchange, message, shares):
 
@@ -153,6 +151,7 @@ def buyLowerThanFairPrice(buy_orders, counter, exchange, message, shares):
         counter = buy(buy_orders, counter, exchange, symbol, message['sell'][0][0], message['sell'][0][1])
         shares[symbol] += message[symbol][0][1]
         print(shares)
+        print("SOMETHING BOUGHT!")
 
 def cancelPastOrders(sell_orders):
     if len(sell_orders) > 0: sell_orders.popleft()
