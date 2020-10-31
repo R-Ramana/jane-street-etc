@@ -27,11 +27,11 @@ def getAndUpdateStockFairPrice(bookMessage, stockFairPrices):
     symbol = bookMessage["symbol"]
     maxBuyPrice = bookMessage['buy'][0][0]
     minSellPrice = bookMessage['sell'][0][0]
-    currentFairPrice = (maxBuyPrice + minSellPrice) / 2
+    currentFairPrice = (maxBuyPrice + minSellPrice) // 2
     prevFairPrice = stockFairPrices[symbol]
 
     if (prevFairPrice > 0):
-        fairPrice = prevFairPrice * 0.9 + currentFairPrice * 0.1
+        fairPrice = int(prevFairPrice * 0.9 + currentFairPrice * 0.1)
         stockFairPrices[symbol] = fairPrice
         return prevFairPrice
     stockFairPrices[symbol] = currentFairPrice
