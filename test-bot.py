@@ -165,10 +165,11 @@ def main():
 
 
             if message['symbol'] in stocks:
-                print(getStockFairPrice)
+                symbol, price = getStockFairPrice()
+                print(f'{symbol}, {price}')
 
             if message['symbol'] == "XFC": 
-                print(getXLFFairPrice)
+                print(f'XLF, {getXLFFairPrice()})
 
         if(message["type"] == "close"):
             print("The round has ended")
