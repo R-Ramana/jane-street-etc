@@ -99,7 +99,10 @@ def main():
     print("The exchange replied:", hello_from_exchange, file=sys.stderr)
     while True:
         message = read_from_exchange(exchange)
-        print(message)
+        if message['type'] == 'book':
+            if message['symbol'] == 'BOND': print(message)
+        else: print(message)
+        print(shares)
         if message['type'] == 'book':
             if message['symbol'] == 'BOND':
                 if len(message['buy']) > 0 and message['buy'][0][0] > 1000 and shares['BOND'] > 0:
