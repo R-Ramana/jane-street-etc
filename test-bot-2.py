@@ -66,7 +66,7 @@ def buy(buy_orders, counter, exchange, symbol, price, size):
         "price": price,
         "size": size
         }
-
+    print(payload)
     buy_orders.append(counter)
     write_to_exchange(exchange, payload)
 
@@ -83,7 +83,7 @@ def sell(sell_orders, counter, exchange, symbol, price, size):
         "price": price,
         "size": size
         }
-    
+    print(payload)
     sell_orders.append(counter)
     write_to_exchange(exchange, payload)
 
