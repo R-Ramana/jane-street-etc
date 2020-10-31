@@ -17,7 +17,7 @@ from collections import deque
 team_name="NULLPOINTEREXCEPTION"
 # This variable dictates whether or not the bot is connecting to the prod
 # or test exchange. Be careful with this switch!
-test_mode = False
+test_mode = True
 
 # This setting changes which test exchange is connected to.
 # 0 is prod-like
@@ -36,6 +36,8 @@ shares['BOND'] = 0
 counter = 0
 best_prices = dict()
 stockFairPrices = {"VALBZ" : 0, "GS": 0, "MS": 0, "WFC": 0}
+
+stocks = ["VALBZ", "GS", "MS", "WFC"]
 
 # ~~~~~============== NETWORKING CODE ==============~~~~~
 def connect():
@@ -122,9 +124,9 @@ def getStockFairPrice(bookMessage, stockFairPrices):
     if (prevFairPrice > 0):
         
         fairPrice = (prevFairPrice + currentFairPrice) / 2
-        return symbol, fairPrice
+        return fairPrice
     
-    return symbol, currentFairPrice
+    return currentFairPrice
 
 def getXLFFairPrice(stockFairPrices):
     return 0.3*1000 + 0.2*stockFairPrices["GS"] + 0.3*stockFairPrices["MS"] + 0.2*stockFairPrices["WFC"]
@@ -133,9 +135,21 @@ def getVALEFairPrice(stockFairPrices):
     return stockFairPrices["VALBZ"]
 
 def sellHigherThanFairPrice(sell_orders, counter, exchange, symbol, message, shares):
-    if len(message['buy']) > 0 and message['buy'][0][0] > 1000 and shares['BOND'] > 0:
-        counter = sell(sell_orders, counter, exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
-        shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
+
+    fairPrice = getStockFairPrice(message, stockFairPrices)
+
+    if len(message['buy']) > 0 and message['buy'][0][0] > fairPrice and shares[symbol] > 0:
+        counter = sell(sell_orders, counter, exchange, symbol, message['buy'][0][0], message['buy'][0][1])
+        shares[symbol] -= message['buy'][0][1] if shares[symbol] >= message['buy'][0][1] else shares[symbol]
+        print(shares)
+
+def buyLowerThanFairPrice(buy_orders, counter, exchange, symbol, message, shares):
+
+    fairPrice = getStockFairPrice(message, stockFairPrices)
+
+    if len(message['sell']) > 0 and message['sell'][0][0] <= fairPrice:
+        counter = buy(buy_orders, counter, exchange, symbol, message['sell'][0][0], message['sell'][0][1])
+        shares[symbol] += message[symbol][0][1]
         print(shares)
 
 def cancelPastOrders(sell_orders):
@@ -195,6 +209,10 @@ def main():
     print("The exchange replied:", hello_from_exchange, file=sys.stderr)
     shares = dict()
     shares['BOND'] = 0
+    shares['VALBZ'] = 0
+    shares['GS'] = 0
+    shares['MS'] = 0
+    shares['WFC'] = 0
     counter = 0
     buy_orders = deque
     sell_orders = deque
@@ -221,10 +239,13 @@ def main():
 
 
             if message['symbol'] in stocks:
-                symbol, price = getStockFairPrice(message, stockFairPrices)
-                print(f'{symbol}, {price}')
+                price = getStockFairPrice(message, stockFairPrices)
+                print(price)
 
-            if message['symbol'] == "XFC": 
+                sellHigherThanFairPrice(sell_orders, counter, exchange, message['symbol'], message, shares)
+                buyLowerThanFairPrice(sell_orders, counter, exchange, message['symbol'], message, shares)
+
+            if message['symbol'] == "XLF": 
                 print(f'XLF, {getXLFFairPrice()}')
 
         if(message["type"] == "close"):
