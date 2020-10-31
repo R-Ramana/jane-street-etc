@@ -32,9 +32,6 @@ exchange_hostname = "test-exch-" + team_name if test_mode else prod_exchange_hos
 
 buy_orders = dict()
 sell_orders = dict()
-shares = dict()
-shares['BOND'] = 0
-counter = 0
 
 # ~~~~~============== NETWORKING CODE ==============~~~~~
 def connect():
@@ -81,6 +78,8 @@ def buy(counter, exchange, symbol, price, size):
     buy_orders[symbol] = [price, size, counter]
     write_to_exchange(exchange, payload)
 
+    return counter
+
 def sell(counter, exchange, symbol, price, size):
     counter += 1
     
@@ -96,6 +95,8 @@ def sell(counter, exchange, symbol, price, size):
     sell_orders[symbol] = [price, size, counter]
     write_to_exchange(exchange, payload)
 
+    return counter
+
 def cancel(exchange, order_id):
     payload = {
         "type" : "cancel",
@@ -107,7 +108,7 @@ def getFairPrice(bookMessage):
     maxBuyPrice = bookMessage['buy'][0][0]
     minSellPrice = bookMessage['sell'][0][0]
 
-    fairPrice = (maxBuyPrice + minSellPrice)
+    fairPrice = (maxBuyPrice + minSellPrice) / 2
 
     return bookMessage['symbol'], fairPrice
 
@@ -122,6 +123,9 @@ def main():
     # Since many write messages generate marketdata, this will cause an
     # exponential explosion in pending messages. Please, don't do that!
     print("The exchange replied:", hello_from_exchange, file=sys.stderr)
+    shares = dict()
+    shares['BOND'] = 0
+    counter = 0
     while True:
         
         message = read_from_exchange(exchange)
@@ -131,11 +135,11 @@ def main():
         if message['type'] == 'book':
             if message['symbol'] == 'BOND':
                 if len(message['buy']) > 0 and message['buy'][0][0] > 1000 and shares['BOND'] > 0:
-                    sell(counter, exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
+                    counter = sell(counter, exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
                     shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
                     print(shares)
                 if len(message['sell']) > 0 and message['sell'][0][0] <= 1000:
-                    buy(counter, exchange, 'BOND', message['sell'][0][0], message['sell'][0][1])
+                    counter = buy(counter, exchange, 'BOND', message['sell'][0][0], message['sell'][0][1])
                     shares['BOND'] += message['sell'][0][1]
                     print(shares)
 
