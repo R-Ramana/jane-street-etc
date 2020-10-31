@@ -13,6 +13,7 @@ import json
 from collections import deque 
 from networking import connect, write_to_exchange, read_from_exchange
 from exchange import convert_to, convert_from, buy, sell, cancel
+from bond import *
 
 # ~~~~~============== CONFIGURATION  ==============~~~~~
 # replace REPLACEME with your team name!
@@ -75,28 +76,6 @@ def buyLowerThanFairPrice(buy_orders, counter, exchange, message, shares):
         shares[message['symbol']] += message['sell'][0][1]
         print(shares)
 
-def sellBondHigherThanFairPrice(sell_orders, counter, exchange, message, shares):
-    if len(message['buy']) > 0 and message['buy'][0][0] > 1000 and shares['BOND'] > -100:
-        counter = sell(sell_orders, counter, exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
-        shares['BOND'] -= message['buy'][0][1]
-        print(shares)
-
-def buyBondLowerThanFairPrice(buy_orders, counter, exchange, message, shares):
-    if len(message['sell']) > 0 and message['sell'][0][0] < 1000 and shares['BOND'] < 100:
-        counter = buy(buy_orders, counter, exchange, 'BOND', message['sell'][0][0], message['sell'][0][1])
-        shares['BOND'] += message['sell'][0][1]
-        print(shares)
-
-def cancelPastOrders(exchange, sell_orders, buy_orders, i):
-    if i > 5:
-        if len(sell_orders) > 0: 
-            cancel(exchange, sell_orders.popleft())
-        if len(buy_orders) > 0: 
-            cancel(exchange, buy_orders.popleft())
-        return 0
-
-    else: return i
-
 def add_to_market(message):
     symbol = message["symbol"]
     if (len(message['buy']) > 0):
@@ -148,7 +127,7 @@ def main():
         else:
             print(message)
             continue
-
+        
         if message['type'] == 'book':
             if message['symbol'] == 'BOND':
                 sellBondHigherThanFairPrice(sell_orders, counter, exchange, message, shares)
