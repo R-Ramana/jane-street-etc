@@ -17,13 +17,13 @@ from collections import deque
 team_name="NULLPOINTEREXCEPTION"
 # This variable dictates whether or not the bot is connecting to the prod
 # or test exchange. Be careful with this switch!
-test_mode = False
+test_mode = True
 
 # This setting changes which test exchange is connected to.
 # 0 is prod-like
 # 1 is slower
 # 2 is empty
-test_exchange_index=1
+test_exchange_index=0
 prod_exchange_hostname="production"
 
 port=25000 + (test_exchange_index if test_mode else 0)
@@ -75,7 +75,7 @@ def buy(buy_orders, counter, exchange, symbol, price, size):
         "size": size
         }
 
-    # buy_orders.append(counter)
+    buy_orders.append(counter)
     write_to_exchange(exchange, payload)
 
     return counter
@@ -92,7 +92,7 @@ def sell(sell_orders, counter, exchange, symbol, price, size):
         "size": size
         }
     
-    # sell_orders.append(counter)
+    sell_orders.append(counter)
     write_to_exchange(exchange, payload)
 
     return counter
@@ -131,8 +131,8 @@ def sellHigherThanFairPrice(sell_orders, counter, exchange, symbol, message, sha
         shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
         print(shares)
 
-def cancelPastOrders(sell_orders):
-    if len(sell_orders) > 0: sell_orders.popleft()
+def cancelPastOrders(exchange, sell_orders):
+    if len(sell_orders) > 0: cancel(exchange, sell_orders.popleft())
 
 # ~~~~~============== MAIN LOOP ==============~~~~~
 
@@ -155,7 +155,6 @@ def main():
         if(message["type"] == "close"):
             print("The round has ended")
             break
-        
         if message['type'] == 'book':
             if message['symbol'] == 'BOND': print(message)
         elif message['type'] == 'trade': continue
