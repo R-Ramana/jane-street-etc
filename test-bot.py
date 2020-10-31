@@ -141,7 +141,7 @@ def sellHigherThanFairPrice(sell_orders, counter, exchange, symbol, message, sha
         shares[symbol] -= message['buy'][0][1] if shares[symbol] >= message['buy'][0][1] else shares[symbol]
         print(shares)
 
-def buyLowerThanFairPrice(buy_orders, counter, exchange, symbol, message, shares);
+def buyLowerThanFairPrice(buy_orders, counter, exchange, symbol, message, shares):
 
     fairPrice = getStockFairPrice(message, stockFairPrices)
 
