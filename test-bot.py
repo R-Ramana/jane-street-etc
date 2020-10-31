@@ -100,7 +100,7 @@ def main():
             # if message['symbol'] == 'BOND' or message['symbol'] in stockFairPrices: print(best_prices)
         elif message['type'] == 'trade': continue
         else:
-            print(message)
+            # print(message)
             continue
         
         if message['type'] == 'book':

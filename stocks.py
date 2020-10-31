@@ -2,7 +2,7 @@ from exchange import sell, buy
 
 def sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices):
     
-    symbol = message['symbol']
+    symbol = str(message['symbol'])
 
     if len(message['buy']) > 0 and shares[symbol] > -100:
 
@@ -17,7 +17,7 @@ def sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares
 
 def buyStockLowerThanFairPrice(buy_orders, counter, exchange, message, shares, stockFairPrices):
 
-    symbol = message['symbol']
+    symbol = str(message['symbol'])
 
     if len(message['sell']) > 0 and shares[symbol] < 100:
 
