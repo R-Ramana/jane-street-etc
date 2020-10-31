@@ -53,28 +53,7 @@ def read_from_exchange(exchange):
     return json.loads(exchange.readline())
 
 # ~~~~~============== MESSAGES CODE ==============~~~~~
-def convert(counter, exchange, symbol, size, dir):
-    counter += 1
-    payload = {
-        "type": "convert",
-        "order_id" : counter,
-        "symbol": symbol,
-        "dir" : dir,
-        "size" : size
-    }
-    write_to_exchange(exchange, payload)
 
-    return counter
-
-def convert_to(shares, counter, exchange, symbol, size):
-    shares[symbol] += size
-    shares['VALBZ'] -= size
-    return convert(counter, exchange, symbol, size, "BUY")
-
-def convert_from(shares, counter, exchange, symbol, size):
-    shares[symbol] -= size
-    shares['VALBZ'] += size
-    return convert(counter, exchange, symbol, size, "SELL")
     
 def buy(buy_orders, counter, exchange, symbol, price, size):
     counter += 1
@@ -189,10 +168,40 @@ def add_to_market(message):
 #             and vale_to_valbz_num > 0:
 #             counter = convert_from(shares, counter, exchange, "VALE", vale_to_valbz_num)
 #     return counter
+def convert(counter, exchange, symbol, size, dir):
+    counter += 1
+    payload = {
+        "type": "convert",
+        "order_id" : counter,
+        "symbol": symbol,
+        "dir" : dir,
+        "size" : size
+    }
+    write_to_exchange(exchange, payload)
+
+    return counter
+
+def convert_to(shares, counter, exchange, symbol, size):
+    shares[symbol] += size
+    shares['VALBZ'] -= size
+    return convert(counter, exchange, symbol, size, "BUY")
+
+def convert_from(shares, counter, exchange, symbol, size):
+    shares[symbol] -= size
+    shares['VALBZ'] += size
+    return convert(counter, exchange, symbol, size, "SELL")
 
 def check_ADR(buy_orders, sell_orders, shares, counter, exchange, message):
     if 'VALBZ' not in best_prices or 'VALE' not in best_prices: return counter
     if best_prices['VALBZ'] == (0,0) or best_prices['VALE'] == (0,0): return counter
+
+    if shares['VALE'] > shares['VALBZ'] + 10:
+        counter = convert_from(shares,counter,exchange,'VALE',5)
+        return counter
+    elif shares['VALBZ'] > shares['VALE'] + 10:
+        counter = convert_to(shares, counter, exchange, 'VALBZ',5)\
+        return counter
+
     price_valbz = sum(best_prices['VALBZ'])/2
     price_vale = sum(best_prices['VALE'])/2
     if price_valbz > price_vale + 1:
