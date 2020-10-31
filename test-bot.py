@@ -108,7 +108,6 @@ def main():
                 counter = sellBondHigherThanFairPrice(sell_orders, counter, exchange, message, shares)
                 counter = buyBondLowerThanFairPrice(buy_orders, counter, exchange, message, shares)
             if message['symbol'] in stockFairPrices:
-                price = getAndUpdateStockFairPrice(message, stockFairPrices)
                 counter = sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices)
                 counter = buyStockLowerThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices)
 
