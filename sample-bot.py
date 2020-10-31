@@ -128,7 +128,7 @@ def main():
                     print(shares)
                 if len(message['sell']) > 0 and message['sell'][0][0] <= 1000:
                     buy(counter, exchange, 'BOND', message['sell'][0][0], message['sell'][0][1])
-                    if read_from_exchange(exchange)['type'] == 'ack':
+                    shares['BOND'] += message['sell'][0][1]
                     print(shares)
 
         if(message["type"] == "close"):
