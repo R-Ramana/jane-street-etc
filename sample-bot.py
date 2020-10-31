@@ -100,19 +100,20 @@ def main():
     print("The exchange replied:", hello_from_exchange, file=sys.stderr)
     while True:
         message = read_from_exchange(exchange)
-        if message['type'] == 'book':
+        if message['type'] == 'book' or message['type'] == 'trade':
             if message['symbol'] == 'BOND': print(message)
         else: print(message)
-        print(shares)
         if message['type'] == 'book':
             if message['symbol'] == 'BOND':
                 if len(message['buy']) > 0 and message['buy'][0][0] > 1000 and shares['BOND'] > 0:
                     sell(counter, exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
                     shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
+                    print(shares)
                     # print(f'sold {message['buy'][0][1]} BOND at {message['buy'][0][0]}')
                 if len(message['sell']) > 0 and message['sell'][0][0] < 1000:
                     buy(counter, exchange, 'BOND', message['sell'][0][0], message['sell'][0][1])
                     shares['BOND'] += message['sell'][0][1]
+                    print(shares)
                     # print(f'bought {message['sell'][0][1]} BOND at {message['sell'][0][0]}')
 
         if(message["type"] == "close"):
