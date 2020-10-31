@@ -12,6 +12,8 @@ def sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares
             shares[symbol] -= message['buy'][0][1] if shares[symbol] >= message['buy'][0][1] else shares[symbol]
             print(shares)
             print("SOMETHING SOLD!")
+    
+    return counter
 
 def buyStockLowerThanFairPrice(buy_orders, counter, exchange, message, shares, stockFairPrices):
 
@@ -24,6 +26,8 @@ def buyStockLowerThanFairPrice(buy_orders, counter, exchange, message, shares, s
         shares[symbol] += message['sell'][0][1]
         print(shares)
         print("SOMETHING BOUGHT!")
+
+    return counter
 
 def getAndUpdateStockFairPrice(bookMessage, stockFairPrices):
     

@@ -86,6 +86,7 @@ def main():
     while True:
         i += 1
         if i > 50:
+            print
             print(stockFairPrices)
             print(best_prices)
             i = 0
