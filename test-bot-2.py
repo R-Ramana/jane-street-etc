@@ -210,10 +210,14 @@ def check_ADR(buy_orders, sell_orders, shares, counter, exchange, message):
     price_vale = sum(best_prices['VALE'])/2
     if price_valbz > price_vale + 1:
         counter = buy(buy_orders, counter,exchange,'VALE',best_prices['VALE'][1],1)
+        shares['VALE'] += 1
         counter = sell(sell_orders, counter, exchange, 'VALBZ', best_prices['VALBZ'][0],1)
+        shares['VALBZ'] -= 1
     elif price_vale > price_valbz + 1:
         counter = buy(buy_orders, counter,exchange,'VALBZ',best_prices['VALE'][1],1)
+        shares['VALBZ'] += 1
         counter = sell(sell_orders, counter, exchange, 'VALBZ', best_prices['VALBZ'][0],1)
+        shares['VALE'] -= 1
     return counter
 
 
@@ -258,6 +262,7 @@ def main():
                     print(shares)
             if message['symbol'] == 'VALE' or message['symbol'] == 'VALBZ':
                 counter = check_ADR(buy_orders, sell_orders, shares, counter, exchange, message)
+                print(shares)
             #     if shares['VALBZ'] == 0:
             #         if message['symbol'] == 'VALBZ':
             #             counter = buy(buy_orders, counter, exchange, 'VALBZ', message['sell'][0][0], message['sell'][0][1])
