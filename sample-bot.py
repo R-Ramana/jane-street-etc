@@ -35,7 +35,7 @@ sell_orders = dict()
 shares = dict()
 shares['BOND'] = 0
 counter = 0
-stockFairPrices = {"VALBZ" : 0, "VALE": 0, "GS": 0, "MS": 0, "WFC": 0}
+stockFairPrices = {"VALBZ" : 0, "GS": 0, "MS": 0, "WFC": 0}
 
 # ~~~~~============== NETWORKING CODE ==============~~~~~
 def connect():
@@ -104,13 +104,13 @@ def cancel(exchange, order_id):
     }
     write_to_exchange(exchange, payload)
 
-def getStockFairPrice(bookMessage, fairPrices):
+def getStockFairPrice(bookMessage, stockFairPrices):
 
     symbol = bookMessage["symbol"]
     maxBuyPrice = bookMessage['buy'][0][0]
     minSellPrice = bookMessage['sell'][0][0]
     currentFairPrice = (maxBuyPrice + minSellPrice) / 2
-    prevFairPrice = fairPrices[symbol]
+    prevFairPrice = stockFairPrices[symbol]
 
     if (prevFairPrice > 0):
         
@@ -119,8 +119,12 @@ def getStockFairPrice(bookMessage, fairPrices):
     
     return symbol, currentFairPrice
 
-def getXLFFairPrice(fairPrices):
+def getXLFFairPrice(stockFairPrices):
     return 0.3*1000 + 0.2*stockFairPrices["GS"] + 0.3*stockFairPrices["MS"] + 0.2*stockFairPrices["WFC"]
+
+def getVALEFairPrice(stockFairPrices):
+    return stockFairPrices["VALBZ"]
+
 
 # ~~~~~============== MAIN LOOP ==============~~~~~
 
