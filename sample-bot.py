@@ -31,6 +31,7 @@ exchange_hostname = "test-exch-" + team_name if test_mode else prod_exchange_hos
 
 buy_orders = dict()
 sell_orders = dict()
+shares = dict()
 
 # ~~~~~============== NETWORKING CODE ==============~~~~~
 def connect():
@@ -92,6 +93,17 @@ def main():
     while True:
         message = read_from_exchange(exchange)
         print(message)
+        if message['type'] == 'book':
+            if message['symbol'] == 'BOND':
+                if message['buy'][0][0] > 1000 and shares['BOND'] > 0:
+                    sell(exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
+                    shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
+                    print(f'sold {message['buy'][0][1]} BOND at {message['buy'][0][0]}')
+                if message['sell'][0][0] < 1000:
+                    buy(exchange, 'BOND', message['sell'][0][0], message['sell'][0][1])
+                    shares['BOND'] += message['sell'][0][1]
+                    print(f'bought {message['sell'][0][1]} BOND at {message['sell'][0][0]}')
+
         if(message["type"] == "close"):
             print("The round has ended")
             break
