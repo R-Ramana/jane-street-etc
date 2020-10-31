@@ -114,6 +114,7 @@ def getStockFairPrice(bookMessage, stockFairPrices):
 def getXLFFairPrice(stockFairPrices):
     return 0.3*1000 + 0.2*stockFairPrices["GS"] + 0.3*stockFairPrices["MS"] + 0.2*stockFairPrices["WFC"]
 
+
 def getVALEFairPrice(stockFairPrices):
     return stockFairPrices["VALBZ"]
 
@@ -182,11 +183,13 @@ def convert(counter, exchange, symbol, size, dir):
     return counter
 
 def convert_to(shares, counter, exchange, symbol, size):
+    if shares[symbol] + size > 10 or shares['VALBZ'] -size < -10: return counter
     shares[symbol] += size
     shares['VALBZ'] -= size
     return convert(counter, exchange, symbol, size, "BUY")
 
 def convert_from(shares, counter, exchange, symbol, size):
+    if shares['VALBZ'] + size > 10 or shares[symbol] -size < -10: return counter
     shares[symbol] -= size
     shares['VALBZ'] += size
     return convert(counter, exchange, symbol, size, "SELL")
