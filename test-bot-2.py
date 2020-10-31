@@ -158,7 +158,7 @@ def add_to_market(message):
         buy_price = 0
 
     if (len(message['sell']) > 0):
-        sell_price = message['sell'][0]
+        sell_price = message['sell'][0][0]
     elif symbol in best_prices:
         sell_price = best_prices[symbol][1]
     else:
@@ -191,6 +191,7 @@ def add_to_market(message):
 #     return counter
 
 def check_ADR(buy_orders, shares, counter, exchange, message):
+    if 'VALBZ' not in best_prices or 'VALE' not in best_prices: return
     if best_prices['VALBZ'] == (0,0) or best_prices['VALE'] == (0,0): return
     price_valbz = sum(best_prices['VALBZ'])/2
     price_vale = sum(best_prices['VALE'])/2
