@@ -98,7 +98,7 @@ def main():
                     counter = sell(sell_orders, counter, exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
                     shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
                     print(shares)
-                if len(message['sell']) > 0 and message['sell'][0][0] <= 1000:
+                if len(message['sell']) > 0 and message['sell'][0][0] < 1000:
                     counter = buy(buy_orders, counter, exchange, 'BOND', message['sell'][0][0], message['sell'][0][1])
                     shares['BOND'] += message['sell'][0][1]
                     print(shares)
