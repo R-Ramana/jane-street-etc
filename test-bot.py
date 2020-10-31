@@ -35,9 +35,9 @@ shares = dict()
 shares['BOND'] = 0
 counter = 0
 best_prices = dict()
-stockFairPrices = {"VALBZ" : 0, "GS": 0, "MS": 0, "WFC": 0}
+stockFairPrices = {"GS": 0, "MS": 0, "WFC": 0}
 
-stocks = ["VALBZ", "GS", "MS", "WFC"]
+stocks = ["GS", "MS", "WFC"]
 
 # ~~~~~============== NETWORKING CODE ==============~~~~~
 def connect():
@@ -150,7 +150,7 @@ def buyLowerThanFairPrice(buy_orders, counter, exchange, message, shares):
 
     if len(message['sell']) > 0 and message['sell'][0][0] <= fairPrice:
         counter = buy(buy_orders, counter, exchange, symbol, message['sell'][0][0], message['sell'][0][1])
-        shares[symbol] += message[symbol][0][1]
+        shares[symbol] += message['sell'][0][1]
         print(shares)
         print("SOMETHING BOUGHT!")
 
@@ -211,7 +211,6 @@ def main():
     print("The exchange replied:", hello_from_exchange, file=sys.stderr)
     shares = dict()
     shares['BOND'] = 0
-    shares['VALBZ'] = 0
     shares['GS'] = 0
     shares['MS'] = 0
     shares['WFC'] = 0
