@@ -228,6 +228,9 @@ def main():
                     shares['BOND'] += message['sell'][0][1]
                     print(shares)
             if message['symbol'] == 'VALE' or message['symbol'] == 'VALBZ':
+                if shares['VALBZ'] == 0:
+                    counter = buy(buy_orders, counter, exchange, 'VALBZ', message['sell'][0][0], message['sell'][0][1])
+                    shares['VALBZ'] += message['sell'][0][1]
                 if 'VALE' in shares:
                     print (shares)
                     counter = convert_from(counter, exchange, 'VALE', 1)
