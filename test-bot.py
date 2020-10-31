@@ -145,6 +145,7 @@ def sellHigherThanFairPrice(sell_orders, counter, exchange, message, shares):
 
 def buyLowerThanFairPrice(buy_orders, counter, exchange, message, shares):
 
+    symbol = message['symbol']
     fairPrice = getAndUpdateStockFairPrice(message, stockFairPrices)
 
     if len(message['sell']) > 0 and message['sell'][0][0] <= fairPrice:
