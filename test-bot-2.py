@@ -190,7 +190,7 @@ def add_to_market(message):
 #             counter = convert_from(shares, counter, exchange, "VALE", vale_to_valbz_num)
 #     return counter
 
-def check_ADR(buy_orders, shares, counter, exchange, message):
+def check_ADR(buy_orders, sell_orders, shares, counter, exchange, message):
     if 'VALBZ' not in best_prices or 'VALE' not in best_prices: return
     if best_prices['VALBZ'] == (0,0) or best_prices['VALE'] == (0,0): return
     price_valbz = sum(best_prices['VALBZ'])/2
@@ -244,7 +244,7 @@ def main():
                     shares['BOND'] += message['sell'][0][1]
                     print(shares)
             if message['symbol'] == 'VALE' or message['symbol'] == 'VALBZ':
-                check_ADR(buy_orders, shares, counter, exchange, message)
+                check_ADR(buy_orders, sell_orders, shares, counter, exchange, message)
             #     if shares['VALBZ'] == 0:
             #         if message['symbol'] == 'VALBZ':
             #             counter = buy(buy_orders, counter, exchange, 'VALBZ', message['sell'][0][0], message['sell'][0][1])
