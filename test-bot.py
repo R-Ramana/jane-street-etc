@@ -150,7 +150,7 @@ def buyLowerThanFairPrice(buy_orders, counter, exchange, message, shares):
 
     if len(message['sell']) > 0 and message['sell'][0][0] <= fairPrice:
         counter = buy(buy_orders, counter, exchange, symbol, message['sell'][0][0], message['sell'][0][1])
-        shares[symbol] += message[symbol][0][1]
+        shares[symbol] += message['sell'][0][1]
         print(shares)
         print("SOMETHING BOUGHT!")
 
