@@ -1,3 +1,5 @@
+from exchange import sell, buy
+
 def sellBondHigherThanFairPrice(sell_orders, counter, exchange, message, shares):
     if len(message['buy']) > 0 and message['buy'][0][0] > 1000 and shares['BOND'] > -100:
         counter = sell(sell_orders, counter, exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
