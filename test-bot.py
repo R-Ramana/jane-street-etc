@@ -246,7 +246,7 @@ def main():
                 buyLowerThanFairPrice(sell_orders, counter, exchange, message['symbol'], message, shares)
 
             if message['symbol'] == "XLF": 
-                print(f'XLF, {getXLFFairPrice()}')
+                print(f'XLF, {getXLFFairPrice(stockFairPrices)}')
 
         if(message["type"] == "close"):
             print("The round has ended")
