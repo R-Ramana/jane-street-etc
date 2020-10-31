@@ -34,6 +34,7 @@ buy_orders = dict()
 sell_orders = dict()
 shares = dict()
 shares['BOND'] = 0
+counter = 0
 
 # ~~~~~============== NETWORKING CODE ==============~~~~~
 def connect():
@@ -49,34 +50,34 @@ def read_from_exchange(exchange):
     return json.loads(exchange.readline())
 
 # ~~~~~============== MESSAGES CODE ==============~~~~~
-def buy(exchange, symbol, price, size):
-    order_id = str(uuid.uuid4())
+def buy(counter, exchange, symbol, price, size):
+    counter += 1
     
     payload = {
         "type": "add",
-        "order_id": order_id,
+        "order_id": counter,
         "symbol": symbol,
         "dir": "BUY",
         "price": price,
         "size": size
         }
 
-    buy_orders[symbol] = [price, size, order_id]
+    buy_orders[symbol] = [price, size, counter]
     write_to_exchange(exchange, payload)
 
-def sell(exchange, symbol, price, size):
-    order_id = str(uuid.uuid4())
+def sell(counter, exchange, symbol, price, size):
+    counter += 1
     
     payload = {
         "type": "add",
-        "order_id": str(uuid.uuid4()),
+        "order_id": counter,
         "symbol": symbol,
         "dir": "SELL",
         "price": price,
         "size": size
         }
     
-    sell_orders[symbol] = [price, size, order_id]
+    sell_orders[symbol] = [price, size, counter]
     write_to_exchange(exchange, payload)
 
 def cancel(exchange, order_id):
@@ -106,11 +107,11 @@ def main():
         if message['type'] == 'book':
             if message['symbol'] == 'BOND':
                 if len(message['buy']) > 0 and message['buy'][0][0] > 1000 and shares['BOND'] > 0:
-                    sell(exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
+                    sell(counter, exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
                     shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
                     # print(f'sold {message['buy'][0][1]} BOND at {message['buy'][0][0]}')
                 if len(message['sell']) > 0 and message['sell'][0][0] < 1000:
-                    buy(exchange, 'BOND', message['sell'][0][0], message['sell'][0][1])
+                    buy(counter, exchange, 'BOND', message['sell'][0][0], message['sell'][0][1])
                     shares['BOND'] += message['sell'][0][1]
                     # print(f'bought {message['sell'][0][1]} BOND at {message['sell'][0][0]}')
 
