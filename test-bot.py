@@ -145,7 +145,7 @@ def sellHigherThanFairPrice(sell_orders, counter, exchange, message, shares):
         shares[symbol] -= message['buy'][0][1] if shares[symbol] >= message['buy'][0][1] else shares[symbol]
         print(shares)
 
-def buyLowerThanFairPrice(buy_orders, counter, exchange, symbol, message, shares):
+def buyLowerThanFairPrice(buy_orders, counter, exchange, message, shares):
 
     fairPrice = getStockFairPrice(message, stockFairPrices)
 
@@ -241,13 +241,14 @@ def main():
 
 
             if message['symbol'] in stocks:
+                print(message)
                 price = getStockFairPrice(message, stockFairPrices)
-                print(price)
+                print(f'Symbol: {message["symbol"]}, {price}')
 
                 sellHigherThanFairPrice(sell_orders, counter, exchange, message, shares)
                 buyLowerThanFairPrice(sell_orders, counter, exchange, message, shares)
 
-            if message['symbol'] == "XLF": 
+            if message['symbol'] == "XLF":
                 print(f'XLF, {getXLFFairPrice(stockFairPrices)}')
 
         if(message["type"] == "close"):
