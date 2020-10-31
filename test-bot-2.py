@@ -33,6 +33,8 @@ buy_orders = dict()
 sell_orders = dict()
 shares = dict()
 shares['BOND'] = 0
+shares['VALE'] = 0
+shares['VALBZ'] = 0
 counter = 0
 best_prices = dict()
 stockFairPrices = {"VALBZ" : 0, "GS": 0, "MS": 0, "WFC": 0}
@@ -65,9 +67,13 @@ def convert(counter, exchange, symbol, size, dir):
     return counter
 
 def convert_to(counter, exchange, symbol, size):
+    shares[symbol] += size
+    shares['VALBZ'] -= size
     return convert(counter, exchange, symbol, size, "BUY")
 
 def convert_from(counter, exchange, symbol, size):
+    shares[symbol] -= size
+    shares['VALBZ'] += size
     return convert(counter, exchange, symbol, size, "SELL")
     
 def buy(buy_orders, counter, exchange, symbol, price, size):
@@ -174,13 +180,13 @@ def check_etf(counter, exchange, message):
         vale_sell_price, vale_sell_num = vale_sell_pricenum
         valbz_sell_price, valbz_sell_num = valbz_sell_pricenum
 
-        vale_to_valbz_num = min(vale_sell_num, valbz_buy_num)
-        valbz_to_vale_num = min(valbz_sell_num, vale_buy_num)
-        print(vale_to_valbz_num)
-        print(valbz_to_vale_num)
-        if (valbz_to_vale_num * valbz_sell_price + 10 < valbz_to_vale_num * vale_buy_price):
+        vale_to_valbz_num = min(vale_sell_num, valbz_buy_num, shares['VALE'])
+        valbz_to_vale_num = min(valbz_sell_num, vale_buy_num, shares['VALBZ'])
+        if valbz_to_vale_num * valbz_sell_price + 10 < valbz_to_vale_num * vale_buy_price \
+            and valbz_to_vale_num > 0:
             counter = convert_to(counter, exchange, "VALE", vale_to_valbz_num)
-        elif vale_to_valbz_num * vale_sell_price + 10 < vale_to_valbz_num * valbz_buy_price:
+        elif vale_to_valbz_num * vale_sell_price + 10 < vale_to_valbz_num * valbz_buy_price \
+            and vale_to_valbz_num > 0:
             counter = convert_from(counter, exchange, "VALE", vale_to_valbz_num)
     return counter
 
@@ -206,6 +212,7 @@ def main():
             add_to_market(message)
             print(best_prices)
             if message['symbol'] == 'BOND': print(message)
+
         elif message['type'] == 'trade': continue
         else:
             print(message)
