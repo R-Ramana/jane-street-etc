@@ -55,10 +55,22 @@ def getXLFFairPrice(stockFairPrices):
 def getVALEFairPrice(stockFairPrices):
     return stockFairPrices["VALBZ"]
 
-def sellHigherThanFairPrice(sell_orders, counter, exchange, symbol, message, shares):
-    if len(message['buy']) > 0 and message['buy'][0][0] > 1000 and shares['BOND'] > 0:
-        counter = sell(sell_orders, counter, exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
-        shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
+def sellHigherThanFairPrice(sell_orders, counter, exchange, message, shares):
+
+    fairPrice = 1000 if message['symbol'] == 'BOND' else 0
+
+    if len(message['buy']) > 0 and message['buy'][0][0] > fairPrice and shares[message['symbol']] > 0:
+        counter = sell(sell_orders, counter, exchange, message['symbol'], message['buy'][0][0], message['buy'][0][1])
+        shares[message['symbol']] -= message['buy'][0][1] if shares[message['symbol']] >= message['buy'][0][1] else shares[message['symbol']]
+        print(shares)
+
+def buyLowerThanFairPrice(buy_orders, counter, exchange, message, shares):
+
+    fairPrice = 1000 if message['symbol'] == 'BOND' else 0
+
+    if len(message['sell']) > 0 and message['sell'][0][0] < fairPrice:
+        counter = buy(buy_orders, counter, exchange, message['symbol'], message['sell'][0][0], message['sell'][0][1])
+        shares[message['symbol']] += message[message['symbol']][0][1]
         print(shares)
 
 def cancelPastOrders(sell_orders):
@@ -94,15 +106,8 @@ def main():
             continue
         if message['type'] == 'book':
             if message['symbol'] == 'BOND':
-                if len(message['buy']) > 0 and message['buy'][0][0] > 1000 and shares['BOND'] > 0:
-                    counter = sell(sell_orders, counter, exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
-                    shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
-                    print(shares)
-                if len(message['sell']) > 0 and message['sell'][0][0] < 1000:
-                    counter = buy(buy_orders, counter, exchange, 'BOND', message['sell'][0][0], message['sell'][0][1])
-                    shares['BOND'] += message['sell'][0][1]
-                    print(shares)
-
+                sellHigherThanFairPrice(sell_orders, counter, exchange, message, shares)
+                buyLowerThanFairPrice(buy_orders, counter, exchange, message, shares)
         
 
 if __name__ == "__main__":
