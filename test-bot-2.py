@@ -214,9 +214,9 @@ def check_ADR(buy_orders, sell_orders, shares, counter, exchange, message):
         counter = sell(sell_orders, counter, exchange, 'VALBZ', best_prices['VALBZ'][0],1)
         shares['VALBZ'] -= 1
     elif price_vale > price_valbz + 1:
-        counter = buy(buy_orders, counter,exchange,'VALBZ',best_prices['VALE'][1],1)
+        counter = buy(buy_orders, counter,exchange,'VALBZ',best_prices['VALBZ'][1],1)
         shares['VALBZ'] += 1
-        counter = sell(sell_orders, counter, exchange, 'VALBZ', best_prices['VALBZ'][0],1)
+        counter = sell(sell_orders, counter, exchange, 'VALE', best_prices['VALE'][0],1)
         shares['VALE'] -= 1
     return counter
 
