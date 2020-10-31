@@ -113,7 +113,7 @@ def cancel(exchange, order_id):
     }
     write_to_exchange(exchange, payload)
 
-def getStockFairPrice(bookMessage, stockFairPrices):
+def getAndUpdateStockFairPrice(bookMessage, stockFairPrices):
 
     symbol = bookMessage["symbol"]
     maxBuyPrice = bookMessage['buy'][0][0]
@@ -124,7 +124,7 @@ def getStockFairPrice(bookMessage, stockFairPrices):
     if (prevFairPrice > 0):
         fairPrice = (prevFairPrice + currentFairPrice) / 2
         stockFairPrices[symbol] = fairPrice
-        return fairPrice
+        return prevFairPrice
     
     stockFairPrices[symbol] = currentFairPrice
     return currentFairPrice
@@ -138,7 +138,7 @@ def getVALEFairPrice(stockFairPrices):
 def sellHigherThanFairPrice(sell_orders, counter, exchange, message, shares):
 
     symbol = message['symbol']
-    fairPrice = getStockFairPrice(message, stockFairPrices)
+    fairPrice = getAndUpdateStockFairPrice(message, stockFairPrices)
 
     if len(message['buy']) > 0 and message['buy'][0][0] > fairPrice and shares[symbol] > 0:
         counter = sell(sell_orders, counter, exchange, symbol, message['buy'][0][0], message['buy'][0][1])
@@ -147,7 +147,7 @@ def sellHigherThanFairPrice(sell_orders, counter, exchange, message, shares):
 
 def buyLowerThanFairPrice(buy_orders, counter, exchange, message, shares):
 
-    fairPrice = getStockFairPrice(message, stockFairPrices)
+    fairPrice = getAndUpdateStockFairPrice(message, stockFairPrices)
 
     if len(message['sell']) > 0 and message['sell'][0][0] <= fairPrice:
         counter = buy(buy_orders, counter, exchange, symbol, message['sell'][0][0], message['sell'][0][1])
@@ -242,7 +242,7 @@ def main():
 
             if message['symbol'] in stocks:
                 print(message)
-                price = getStockFairPrice(message, stockFairPrices)
+                price = getAndUpdateStockFairPrice(message, stockFairPrices)
                 print(f'Symbol: {message["symbol"]}, {price}')
 
                 sellHigherThanFairPrice(sell_orders, counter, exchange, message, shares)
