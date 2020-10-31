@@ -167,7 +167,7 @@ def add_to_market(message):
     best_prices[symbol] = (buy_price, sell_price)   
     
 
-def check_etf(counter, exchange, message):
+def check_etf(shares, counter, exchange, message):
     symbol = message["symbol"]
 
     if (symbol == "VALE" and "VALBZ" in best_prices) or (symbol == "VALBZ" and "VALE" in best_prices):
@@ -184,10 +184,10 @@ def check_etf(counter, exchange, message):
         valbz_to_vale_num = min(valbz_sell_num, vale_buy_num, shares['VALBZ'])
         if valbz_to_vale_num * valbz_sell_price + 10 < valbz_to_vale_num * vale_buy_price \
             and valbz_to_vale_num > 0:
-            counter = convert_to(counter, exchange, "VALE", vale_to_valbz_num)
+            counter = convert_to(shares, counter, exchange, "VALE", vale_to_valbz_num)
         elif vale_to_valbz_num * vale_sell_price + 10 < vale_to_valbz_num * valbz_buy_price \
             and vale_to_valbz_num > 0:
-            counter = convert_from(counter, exchange, "VALE", vale_to_valbz_num)
+            counter = convert_from(shares, counter, exchange, "VALE", vale_to_valbz_num)
     return counter
 
 # ~~~~~============== MAIN LOOP ==============~~~~~
@@ -234,13 +234,13 @@ def main():
                     if message['symbol'] == 'VALBZ':
                         counter = buy(buy_orders, counter, exchange, 'VALBZ', message['sell'][0][0], message['sell'][0][1])
                         shares['VALBZ'] += message['sell'][0][1]
-                if 'VALE' in shares:
-                    print (shares)
-                    counter = convert_from(shares, counter, exchange, 'VALE', 1)
-                elif 'VALBZ' in shares:
-                    print (shares)
-                    counter = convert_to(shares, counter, exchange, 'VALE', 1)
-                #counter = check_etf(counter, exchange, message)
+                # if 'VALE' in shares:
+                #     print (shares)
+                #     counter = convert_from(shares, counter, exchange, 'VALE', 1)
+                # elif 'VALBZ' in shares:
+                #     print (shares)
+                #     counter = convert_to(shares, counter, exchange, 'VALE', 1)
+                counter = check_etf(shares, counter, exchange, message)
 
         if(message["type"] == "close"):
             print("The round has ended")

@@ -1,20 +1,22 @@
-def sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares):
+from exchange import sell, buy
+
+def sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices):
     
     symbol = message['symbol']
     fairPrice = getAndUpdateStockFairPrice(message, stockFairPrices)
 
-    if len(message['buy']) > 0 and message['buy'][0][0] > fairPrice and shares[symbol] > 0:
+    if len(message['buy']) > 0 and message['buy'][0][0] > fairPrice and shares[symbol] > -100:
         counter = sell(sell_orders, counter, exchange, symbol, message['buy'][0][0], message['buy'][0][1])
         shares[symbol] -= message['buy'][0][1] if shares[symbol] >= message['buy'][0][1] else shares[symbol]
         print(shares)
         print("SOMETHING SOLD!")
 
-def buyStockLowerThanFairPrice(buy_orders, counter, exchange, message, shares):
+def buyStockLowerThanFairPrice(buy_orders, counter, exchange, message, shares, stockFairPrices):
 
     symbol = message['symbol']
     fairPrice = getAndUpdateStockFairPrice(message, stockFairPrices)
 
-    if len(message['sell']) > 0 and message['sell'][0][0] <= fairPrice:
+    if len(message['sell']) > 0 and message['sell'][0][0] < fairPrice and shares[symbol] < 100:
         counter = buy(buy_orders, counter, exchange, symbol, message['sell'][0][0], message['sell'][0][1])
         shares[symbol] += message['sell'][0][1]
         print(shares)
