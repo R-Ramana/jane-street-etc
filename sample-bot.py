@@ -111,7 +111,7 @@ def main():
             if message['symbol'] in stockFairPrices:
                 getAndUpdateStockFairPrice(message, stockFairPrices)
                 counter = sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices)
-                counter = buyStockLowerThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices)
+                counter = buyStockLowerThanFairPrice(buy_orders, counter, exchange, message, shares, stockFairPrices)
 
 if __name__ == "__main__":
     main()
