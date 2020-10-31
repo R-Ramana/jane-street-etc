@@ -221,6 +221,12 @@ def check_ADR(buy_orders, sell_orders, shares, counter, exchange, message):
     return counter
 
 
+def parse_hello(hello, shares):
+    symbols = hello['symbols']
+    for d in symbols:
+        shares[d['symbol']] = d['position']
+
+
 # ~~~~~============== MAIN LOOP ==============~~~~~
 
 def main():
@@ -233,9 +239,7 @@ def main():
     # exponential explosion in pending messages. Please, don't do that!
     print("The exchange replied:", hello_from_exchange, file=sys.stderr)
     shares = dict()
-    shares['BOND'] = 0
-    shares['VALBZ'] = 0
-    shares['VALE'] = 0
+    parse_hello(hello_from_exchange, shares)
     counter = 0
     buy_orders = deque()
     sell_orders = deque()
