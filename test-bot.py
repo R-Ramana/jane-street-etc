@@ -122,10 +122,11 @@ def getStockFairPrice(bookMessage, stockFairPrices):
     prevFairPrice = stockFairPrices[symbol]
 
     if (prevFairPrice > 0):
-        
         fairPrice = (prevFairPrice + currentFairPrice) / 2
+        stockFairPrices[symbol] = fairPrice
         return fairPrice
     
+    stockFairPrices[symbol] = currentFairPrice
     return currentFairPrice
 
 def getXLFFairPrice(stockFairPrices):
@@ -134,8 +135,9 @@ def getXLFFairPrice(stockFairPrices):
 def getVALEFairPrice(stockFairPrices):
     return stockFairPrices["VALBZ"]
 
-def sellHigherThanFairPrice(sell_orders, counter, exchange, symbol, message, shares):
+def sellHigherThanFairPrice(sell_orders, counter, exchange, message, shares):
 
+    symbol = message['symbol']
     fairPrice = getStockFairPrice(message, stockFairPrices)
 
     if len(message['buy']) > 0 and message['buy'][0][0] > fairPrice and shares[symbol] > 0:
@@ -242,8 +244,8 @@ def main():
                 price = getStockFairPrice(message, stockFairPrices)
                 print(price)
 
-                sellHigherThanFairPrice(sell_orders, counter, exchange, message['symbol'], message, shares)
-                buyLowerThanFairPrice(sell_orders, counter, exchange, message['symbol'], message, shares)
+                sellHigherThanFairPrice(sell_orders, counter, exchange, message, shares)
+                buyLowerThanFairPrice(sell_orders, counter, exchange, message, shares)
 
             if message['symbol'] == "XLF": 
                 print(f'XLF, {getXLFFairPrice(stockFairPrices)}')
