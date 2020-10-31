@@ -50,6 +50,22 @@ def read_from_exchange(exchange):
     return json.loads(exchange.readline())
 
 # ~~~~~============== MESSAGES CODE ==============~~~~~
+def convert(exchange, symbol, size, dir):
+    payload = {
+        "type": "convert",
+        "order_id" : str(uuid.uuid4()),
+        "symbol": symbol,
+        "dir" : dir,
+        "size" : size
+    }
+    write_to_exchange(exchange, payload)
+
+def convert_to(exchange, symbol, size):
+    convert(exchange, symbol, size, "BUY")
+
+def convert_from(exchange, symbol, size):
+    convert(exchange, symbol, size, "SELL")
+    
 def buy(counter, exchange, symbol, price, size):
     counter += 1
     
