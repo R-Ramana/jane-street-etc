@@ -41,6 +41,12 @@ def write_to_exchange(exchange, obj):
 def read_from_exchange(exchange):
     return json.loads(exchange.readline())
 
+def cancel(exchange, order_id):
+    payload = {
+        "type" : "cancel",
+        "order_id" : order_id
+    }
+    write_to_exchange(exchange, payload)
 
 # ~~~~~============== MAIN LOOP ==============~~~~~
 
