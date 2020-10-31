@@ -22,10 +22,11 @@ def buyStockLowerThanFairPrice(buy_orders, counter, exchange, message, shares, s
     if len(message['sell']) > 0 and shares[symbol] < 100:
 
         fairPrice = getAndUpdateStockFairPrice(message, stockFairPrices)
-        counter = buy(buy_orders, counter, exchange, symbol, message['sell'][0][0], message['sell'][0][1])
-        shares[symbol] += message['sell'][0][1]
-        print(shares)
-        print("SOMETHING BOUGHT!")
+        if message['sell'][0][0] < fairPrice:
+            counter = buy(buy_orders, counter, exchange, symbol, message['sell'][0][0], message['sell'][0][1])
+            shares[symbol] += message['sell'][0][1]
+            print(shares)
+            print("SOMETHING BOUGHT!")
 
     return counter
 
