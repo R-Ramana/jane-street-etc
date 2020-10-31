@@ -18,7 +18,7 @@ import collections
 team_name="NULLPOINTEREXCEPTION"
 # This variable dictates whether or not the bot is connecting to the prod
 # or test exchange. Be careful with this switch!
-test_mode = False
+test_mode = True
 
 # This setting changes which test exchange is connected to.
 # 0 is prod-like
@@ -35,6 +35,7 @@ sell_orders = dict()
 shares = dict()
 shares['BOND'] = 0
 counter = 0
+best_prices = dict()
 
 # ~~~~~============== NETWORKING CODE ==============~~~~~
 def connect():
@@ -51,9 +52,10 @@ def read_from_exchange(exchange):
 
 # ~~~~~============== MESSAGES CODE ==============~~~~~
 def convert(exchange, symbol, size, dir):
+    counter += 1
     payload = {
         "type": "convert",
-        "order_id" : str(uuid.uuid4()),
+        "order_id" : counter,
         "symbol": symbol,
         "dir" : dir,
         "size" : size
@@ -66,6 +68,7 @@ def convert_to(exchange, symbol, size):
 def convert_from(exchange, symbol, size):
     convert(exchange, symbol, size, "SELL")
     
+
 def buy(counter, exchange, symbol, price, size):
     counter += 1
     
@@ -104,6 +107,46 @@ def cancel(exchange, order_id):
     write_to_exchange(exchange, payload)
 
 # ~~~~~============== MAIN LOOP ==============~~~~~
+def add_to_market(message):
+    symbol = message["symbol"]
+    if (len(message['buy']) > 0):
+        buy_price = message['buy'][0]
+    elif symbol in best_prices:
+        buy_price = best_prices[symbol][0]
+    else:
+        buy_price = (0,0)
+
+    if (len(message['buy']) > 0):
+        sell_price = message['buy'][0]
+    elif symbol in best_prices:
+        sell_price = best_prices[symbol][1]
+    else:
+        sell_price = (0,0)
+
+    best_prices[symbol] = (buy_price, sell_price)   
+    
+
+def check_etf(exchange, message):
+    symbol = message["symbol"]
+
+    if (symbol == "VALE" and "VALBZ" in best_prices) or (symbol == "VALBZ" and "VALE" in best_prices):
+        vale_buy_pricenum, vale_sell_pricenum = best_prices[symbol]
+        valbz_buy_pricenum, valbz_sell_pricenum = best_prices["VALBZ"]
+
+        vale_buy_price, vale_buy_num = vale_buy_pricenum
+        valbz_buy_price, valbz_buy_num = valbz_buy_pricenum
+
+        vale_sell_price, vale_sell_num = vale_sell_pricenum
+        valbz_sell_price, valbz_sell_num = valbz_sell_pricenum
+
+        vale_to_valbz_num = min(vale_sell_num, valbz_buy_num)
+        valbz_to_vale_num = min(valbz_sell_num, vale_buy_num)
+        if (valbz_to_vale_num * valbz_sell_price + 10 < valbz_to_vale_num * vale_buy_price):
+            convert_to(exchange, "VALE", vale_to_valbz_num)
+        elif vale_to_valbz_num * vale_sell_price + 10 < vale_to_valbz_num * valbz_buy_price:
+            convert_from(exchange, "VALE", vale_to_valbz_num)
+
+# ~~~~~============== MAIN LOOP ==============~~~~~
 
 def main():
     exchange = connect()
@@ -131,6 +174,8 @@ def main():
                     shares['BOND'] += message['sell'][0][1]
                     print(shares)
                     # print(f'bought {message['sell'][0][1]} BOND at {message['sell'][0][0]}')
+            if message['symbol'] == 'VALE' or message['symbol'] == 'VALBZ':
+                check_etf(exchange, message)
 
         if(message["type"] == "close"):
             print("The round has ended")
