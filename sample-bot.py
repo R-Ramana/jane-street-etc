@@ -11,6 +11,7 @@ import sys
 import socket
 import json
 import uuid
+import collections
 
 # ~~~~~============== CONFIGURATION  ==============~~~~~
 # replace REPLACEME with your team name!
@@ -32,6 +33,7 @@ exchange_hostname = "test-exch-" + team_name if test_mode else prod_exchange_hos
 buy_orders = dict()
 sell_orders = dict()
 shares = dict()
+shares['BOND'] = 0
 
 # ~~~~~============== NETWORKING CODE ==============~~~~~
 def connect():
