@@ -11,6 +11,8 @@ import sys
 import socket
 import json
 from collections import deque 
+from networking import connect, write_to_exchange, read_from_exchange
+from exchange import convert_to, convert_from, buy, sell
 
 # ~~~~~============== CONFIGURATION  ==============~~~~~
 # replace REPLACEME with your team name!
@@ -31,79 +33,7 @@ exchange_hostname = "test-exch-" + team_name if test_mode else prod_exchange_hos
 
 stockFairPrices = {"VALBZ" : 0, "GS": 0, "MS": 0, "WFC": 0}
 
-# ~~~~~============== NETWORKING CODE ==============~~~~~
-def connect():
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((exchange_hostname, port))
-    return s.makefile('rw', 1)
-
-def write_to_exchange(exchange, obj):
-    json.dump(obj, exchange)
-    exchange.write("\n")
-
-def read_from_exchange(exchange):
-    return json.loads(exchange.readline())
-
 # ~~~~~============== MESSAGES CODE ==============~~~~~
-def convert(counter, exchange, symbol, size, dir):
-    payload = {
-        "type": "convert",
-        "order_id" : counter,
-        "symbol": symbol,
-        "dir" : dir,
-        "size" : size
-    }
-    write_to_exchange(exchange, payload)
-
-    return counter
-
-def convert_to(counter, exchange, symbol, size):
-    return convert(counter, exchange, symbol, size, "BUY")
-
-def convert_from(counter, exchange, symbol, size):
-    return convert(counter, exchange, symbol, size, "SELL")
-    
-def buy(buy_orders, counter, exchange, symbol, price, size):
-    counter += 1
-    
-    payload = {
-        "type": "add",
-        "order_id": counter,
-        "symbol": symbol,
-        "dir": "BUY",
-        "price": price,
-        "size": size
-        }
-
-    # buy_orders.append(counter)
-    write_to_exchange(exchange, payload)
-
-    return counter
-
-def sell(sell_orders, counter, exchange, symbol, price, size):
-    counter += 1
-    
-    payload = {
-        "type": "add",
-        "order_id": counter,
-        "symbol": symbol,
-        "dir": "SELL",
-        "price": price,
-        "size": size
-        }
-    
-    # sell_orders.append(counter)
-    write_to_exchange(exchange, payload)
-
-    return counter
-
-def cancel(exchange, order_id):
-    payload = {
-        "type" : "cancel",
-        "order_id" : order_id
-    }
-    write_to_exchange(exchange, payload)
-
 def getStockFairPrice(bookMessage, stockFairPrices):
 
     symbol = bookMessage["symbol"]
@@ -137,7 +67,7 @@ def cancelPastOrders(sell_orders):
 # ~~~~~============== MAIN LOOP ==============~~~~~
 
 def main():
-    exchange = connect()
+    exchange = connect(exchange_hostname, port)
     write_to_exchange(exchange, {"type": "hello", "team": team_name.upper()})
     hello_from_exchange = read_from_exchange(exchange)
     # A common mistake people make is to call write_to_exchange() > 1
@@ -148,14 +78,14 @@ def main():
     shares = dict()
     shares['BOND'] = 0
     counter = 0
-    buy_orders = deque
-    sell_orders = deque
+    buy_orders = deque()
+    sell_orders = deque()
     while True:
         message = read_from_exchange(exchange)
         if(message["type"] == "close"):
             print("The round has ended")
             break
-        
+
         if message['type'] == 'book':
             if message['symbol'] == 'BOND': print(message)
         elif message['type'] == 'trade': continue

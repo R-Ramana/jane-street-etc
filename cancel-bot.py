@@ -131,8 +131,15 @@ def sellHigherThanFairPrice(sell_orders, counter, exchange, symbol, message, sha
         shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
         print(shares)
 
-def cancelPastOrders(exchange, sell_orders):
-    if len(sell_orders) > 0: cancel(exchange, sell_orders.popleft())
+def cancelPastOrders(exchange, sell_orders, buy_orders, i):
+    if i > 5:
+        if len(sell_orders) > 0: 
+            cancel(exchange, sell_orders.popleft())
+        if len(buy_orders) > 0: 
+            cancel(exchange, buy_orders.popleft())
+        return 0
+
+    else: return i
 
 # ~~~~~============== MAIN LOOP ==============~~~~~
 
@@ -148,9 +155,11 @@ def main():
     shares = dict()
     shares['BOND'] = 0
     counter = 0
-    buy_orders = deque
-    sell_orders = deque
+    buy_orders = deque()
+    sell_orders = deque()
+    i = 0
     while True:
+        i = cancelPastOrders(exchange, sell_orders, buy_orders, i)
         message = read_from_exchange(exchange)
         if(message["type"] == "close"):
             print("The round has ended")
