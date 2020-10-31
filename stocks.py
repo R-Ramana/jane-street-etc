@@ -40,7 +40,7 @@ def getAndUpdateStockFairPrice(bookMessage, stockFairPrices):
         prevFairPrice = stockFairPrices[symbol]
 
         if (prevFairPrice > 0):
-            fairPrice = int(prevFairPrice * 0.6 + currentFairPrice * 0.4)
+            fairPrice = int(prevFairPrice * 0.4 + currentFairPrice * 0.6)
             stockFairPrices[symbol] = fairPrice
             return prevFairPrice
         stockFairPrices[symbol] = currentFairPrice
