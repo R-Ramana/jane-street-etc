@@ -75,6 +75,18 @@ def buyLowerThanFairPrice(buy_orders, counter, exchange, message, shares):
         shares[message['symbol']] += message[message['symbol']][0][1]
         print(shares)
 
+def sellBondHigherThanFairPrice(sell_orders, counter, exchange, message, shares):
+    if len(message['buy']) > 0 and message['buy'][0][0] > 1000:
+        counter = sell(sell_orders, counter, exchange, message['symbol'], message['buy'][0][0], message['buy'][0][1])
+        shares[message['symbol']] -= message['buy'][0][1] if shares[message['symbol']] >= message['buy'][0][1] else shares[message['symbol']]
+        print(shares)
+
+def buyBondLowerThanFairPrice(buy_orders, counter, exchange, message, shares):
+    if len(message['sell']) > 0 and message['sell'][0][0] < 1000:
+        counter = buy(buy_orders, counter, exchange, message['symbol'], message['sell'][0][0], message['sell'][0][1])
+        shares[message['symbol']] += message[message['symbol']][0][1]
+        print(shares)
+
 def cancelPastOrders(exchange, sell_orders, buy_orders, i):
     if i > 5:
         if len(sell_orders) > 0: 
@@ -139,8 +151,8 @@ def main():
 
         if message['type'] == 'book':
             if message['symbol'] == 'BOND':
-                sellHigherThanFairPrice(sell_orders, counter, exchange, message, shares)
-                buyLowerThanFairPrice(buy_orders, counter, exchange, message, shares)
+                sellBondHigherThanFairPrice(sell_orders, counter, exchange, message, shares)
+                buyBondLowerThanFairPrice(buy_orders, counter, exchange, message, shares)
         
 
 if __name__ == "__main__":
