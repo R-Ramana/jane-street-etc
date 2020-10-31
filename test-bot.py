@@ -245,7 +245,7 @@ def main():
                 sellHigherThanFairPrice(sell_orders, counter, exchange, message['symbol'], message, shares)
                 buyLowerThanFairPrice(sell_orders, counter, exchange, message['symbol'], message, shares)
 
-            if message['symbol'] == "XFC": 
+            if message['symbol'] == "XLF": 
                 print(f'XLF, {getXLFFairPrice()}')
 
         if(message["type"] == "close"):
