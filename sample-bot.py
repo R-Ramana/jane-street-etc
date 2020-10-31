@@ -60,7 +60,6 @@ def buy(exchange, symbol, price, size):
         }
 
     buy_orders[symbol] = [price, size, order_id]
-    
     write_to_exchange(exchange, payload)
 
 def sell(exchange, symbol, price, size):
@@ -76,7 +75,13 @@ def sell(exchange, symbol, price, size):
         }
     
     sell_orders[symbol] = [price, size, order_id]
-    
+    write_to_exchange(exchange, payload)
+
+def cancel(exchange, order_id):
+    payload = {
+        "type" : "cancel",
+        "order_id" : order_id
+    }
     write_to_exchange(exchange, payload)
 
 # ~~~~~============== MAIN LOOP ==============~~~~~
