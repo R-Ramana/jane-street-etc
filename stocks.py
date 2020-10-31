@@ -7,7 +7,7 @@ def sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares
     if len(message['buy']) > 0 and shares[symbol] > -100:
 
         fairPrice = getAndUpdateStockFairPrice(message, stockFairPrices)
-        if message['buy'][0][0] > fairPrice:
+        if message['buy'][0][0] > fairPrice and fairPrice > 0:
             counter = sell(sell_orders, counter, exchange, symbol, message['buy'][0][0], message['buy'][0][1])
             shares[symbol] -= message['buy'][0][1] if shares[symbol] >= message['buy'][0][1] else shares[symbol]
             print(shares)
@@ -31,16 +31,19 @@ def buyStockLowerThanFairPrice(buy_orders, counter, exchange, message, shares, s
     return counter
 
 def getAndUpdateStockFairPrice(bookMessage, stockFairPrices):
-    
-    symbol = bookMessage["symbol"]
-    maxBuyPrice = bookMessage['buy'][0][0]
-    minSellPrice = bookMessage['sell'][0][0]
-    currentFairPrice = (maxBuyPrice + minSellPrice) // 2
-    prevFairPrice = stockFairPrices[symbol]
 
-    if (prevFairPrice > 0):
-        fairPrice = int(prevFairPrice * 0.9 + currentFairPrice * 0.1)
-        stockFairPrices[symbol] = fairPrice
-        return prevFairPrice
-    stockFairPrices[symbol] = currentFairPrice
-    return currentFairPrice
+    symbol = bookMessage["symbol"]
+    if len(bookMessage['buy']) > 0 and len(bookMessage['sell']) > 0:
+        maxBuyPrice = bookMessage['buy'][0][0]
+        minSellPrice = bookMessage['sell'][0][0]
+        currentFairPrice = (maxBuyPrice + minSellPrice) // 2
+        prevFairPrice = stockFairPrices[symbol]
+
+        if (prevFairPrice > 0):
+            fairPrice = int(prevFairPrice * 0.6 + currentFairPrice * 0.4)
+            stockFairPrices[symbol] = fairPrice
+            return prevFairPrice
+        stockFairPrices[symbol] = currentFairPrice
+        return currentFairPrice
+
+    return stockFairPrices[symbol]
