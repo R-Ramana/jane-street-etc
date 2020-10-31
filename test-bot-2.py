@@ -151,44 +151,57 @@ def cancelPastOrders(sell_orders):
 def add_to_market(message):
     symbol = message["symbol"]
     if (len(message['buy']) > 0):
-        buy_price = message['buy'][0]
+        buy_price = message['buy'][0][0]
     elif symbol in best_prices:
         buy_price = best_prices[symbol][0]
     else:
-        buy_price = (0,0)
+        buy_price = 0
 
-    if (len(message['buy']) > 0):
-        sell_price = message['buy'][0]
+    if (len(message['sell']) > 0):
+        sell_price = message['sell'][0]
     elif symbol in best_prices:
         sell_price = best_prices[symbol][1]
     else:
-        sell_price = (0,0)
+        sell_price = 0
 
     best_prices[symbol] = (buy_price, sell_price)   
     
 
-def check_etf(shares, counter, exchange, message):
-    symbol = message["symbol"]
+# def check_etf(shares, counter, exchange, message):
+#     symbol = message["symbol"]
 
-    if (symbol == "VALE" and "VALBZ" in best_prices) or (symbol == "VALBZ" and "VALE" in best_prices):
-        vale_buy_pricenum, vale_sell_pricenum = best_prices["VALE"]
-        valbz_buy_pricenum, valbz_sell_pricenum = best_prices["VALBZ"]
+#     if (symbol == "VALE" and "VALBZ" in best_prices) or (symbol == "VALBZ" and "VALE" in best_prices):
+#         vale_buy_pricenum, vale_sell_pricenum = best_prices["VALE"]
+#         valbz_buy_pricenum, valbz_sell_pricenum = best_prices["VALBZ"]
 
-        vale_buy_price, vale_buy_num = vale_buy_pricenum
-        valbz_buy_price, valbz_buy_num = valbz_buy_pricenum
+#         vale_buy_price, vale_buy_num = vale_buy_pricenum
+#         valbz_buy_price, valbz_buy_num = valbz_buy_pricenum
 
-        vale_sell_price, vale_sell_num = vale_sell_pricenum
-        valbz_sell_price, valbz_sell_num = valbz_sell_pricenum
+#         vale_sell_price, vale_sell_num = vale_sell_pricenum
+#         valbz_sell_price, valbz_sell_num = valbz_sell_pricenum
 
-        vale_to_valbz_num = min(vale_sell_num, valbz_buy_num, shares['VALE'])
-        valbz_to_vale_num = min(valbz_sell_num, vale_buy_num, shares['VALBZ'])
-        if valbz_to_vale_num * valbz_sell_price + 10 < valbz_to_vale_num * vale_buy_price \
-            and valbz_to_vale_num > 0:
-            counter = convert_to(shares, counter, exchange, "VALE", vale_to_valbz_num)
-        elif vale_to_valbz_num * vale_sell_price + 10 < vale_to_valbz_num * valbz_buy_price \
-            and vale_to_valbz_num > 0:
-            counter = convert_from(shares, counter, exchange, "VALE", vale_to_valbz_num)
+#         vale_to_valbz_num = min(vale_sell_num, valbz_buy_num, shares['VALE'])
+#         valbz_to_vale_num = min(valbz_sell_num, vale_buy_num, shares['VALBZ'])
+#         if valbz_to_vale_num * valbz_sell_price + 10 < valbz_to_vale_num * vale_buy_price \
+#             and valbz_to_vale_num > 0:
+#             counter = convert_to(shares, counter, exchange, "VALE", vale_to_valbz_num)
+#         elif vale_to_valbz_num * vale_sell_price + 10 < vale_to_valbz_num * valbz_buy_price \
+#             and vale_to_valbz_num > 0:
+#             counter = convert_from(shares, counter, exchange, "VALE", vale_to_valbz_num)
+#     return counter
+
+def check_ADR(buy_orders, shares, counter, exchange, message):
+    if best_prices['VALBZ'] == (0,0) or best_prices['VALE'] == (0,0): return
+    price_valbz = sum(best_prices['VALBZ'])/2
+    price_vale = sum(best_prices['VALE'])/2
+    if price_valbz > price_vale + 1:
+        counter = buy(buy_orders, counter,exchange,'VALE',best_prices['VALE'][1],1)
+        counter = sell(sell_orders, counter, exchange, 'VALBZ', best_prices['VALBZ'][0],1)
+    elif price_vale > price_valbz + 1:
+        counter = buy(buy_orders, counter,exchange,'VALBZ',best_prices['VALE'][1],1)
+        counter = sell(sell_orders, counter, exchange, 'VALBZ', best_prices['VALBZ'][0],1)
     return counter
+
 
 # ~~~~~============== MAIN LOOP ==============~~~~~
 
@@ -230,17 +243,18 @@ def main():
                     shares['BOND'] += message['sell'][0][1]
                     print(shares)
             if message['symbol'] == 'VALE' or message['symbol'] == 'VALBZ':
-                if shares['VALBZ'] == 0:
-                    if message['symbol'] == 'VALBZ':
-                        counter = buy(buy_orders, counter, exchange, 'VALBZ', message['sell'][0][0], message['sell'][0][1])
-                        shares['VALBZ'] += message['sell'][0][1]
-                # if 'VALE' in shares:
-                #     print (shares)
-                #     counter = convert_from(shares, counter, exchange, 'VALE', 1)
-                # elif 'VALBZ' in shares:
-                #     print (shares)
-                #     counter = convert_to(shares, counter, exchange, 'VALE', 1)
-                counter = check_etf(shares, counter, exchange, message)
+                check_ADR(buy_orders, shares, counter, exchange, message)
+            #     if shares['VALBZ'] == 0:
+            #         if message['symbol'] == 'VALBZ':
+            #             counter = buy(buy_orders, counter, exchange, 'VALBZ', message['sell'][0][0], message['sell'][0][1])
+            #             shares['VALBZ'] += message['sell'][0][1]
+            #     # if 'VALE' in shares:
+            #     #     print (shares)
+            #     #     counter = convert_from(shares, counter, exchange, 'VALE', 1)
+            #     # elif 'VALBZ' in shares:
+            #     #     print (shares)
+            #     #     counter = convert_to(shares, counter, exchange, 'VALE', 1)
+            #     counter = check_etf(shares, counter, exchange, message)
 
         if(message["type"] == "close"):
             print("The round has ended")
