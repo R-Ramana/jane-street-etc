@@ -198,12 +198,13 @@ def check_ADR(buy_orders, sell_orders, shares, counter, exchange, message):
     if 'VALBZ' not in best_prices or 'VALE' not in best_prices: return counter
     if best_prices['VALBZ'] == (0,0) or best_prices['VALE'] == (0,0): return counter
 
-    if shares['VALE'] > shares['VALBZ'] + 10:
-        counter = convert_from(shares,counter,exchange,'VALE',5)
+    if shares['VALE'] >= 8 or shares['VALBZ'] <= -8:
+        counter = convert_from(shares, counter, exchange, 'VALE',5)
         return counter
-    elif shares['VALBZ'] > shares['VALE'] + 10:
-        counter = convert_to(shares, counter, exchange, 'VALBZ',5)
+    elif shares['VALBZ'] >= 8 or shares['VALE'] <= -8:
+        counter = convert_to(shares, counter, exchange, 'VALE',5)
         return counter
+
 
     price_valbz = sum(best_prices['VALBZ'])/2
     price_vale = sum(best_prices['VALE'])/2
