@@ -238,8 +238,8 @@ def main():
                     counter = convert_from(counter, exchange, 'VALE', 1)
                 elif 'VALBZ' in shares:
                     print (shares)
-                    counter = convert_to(counter, exchange, 'VALBZ', 1)
-                counter = check_etf(counter, exchange, message)
+                    counter = convert_to(counter, exchange, 'VALE', 1)
+                #counter = check_etf(counter, exchange, message)
 
         if(message["type"] == "close"):
             print("The round has ended")
