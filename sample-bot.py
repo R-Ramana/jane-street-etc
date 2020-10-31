@@ -105,12 +105,12 @@ def main():
         
         if message['type'] == 'book':
             if message['symbol'] == 'BOND':
-                sellBondHigherThanFairPrice(sell_orders, counter, exchange, message, shares)
-                buyBondLowerThanFairPrice(buy_orders, counter, exchange, message, shares)
-            if message['symbol'] in stockFairPrices:
-                price = getAndUpdateStockFairPrice(message, stockFairPrices)
-                sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices)
-                buyStockLowerThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices)
+                counter = sellBondHigherThanFairPrice(sell_orders, counter, exchange, message, shares)
+                counter = buyBondLowerThanFairPrice(buy_orders, counter, exchange, message, shares)
+            # if message['symbol'] in stockFairPrices:
+            #     price = getAndUpdateStockFairPrice(message, stockFairPrices)
+            #     sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices)
+            #     buyStockLowerThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices)
 
 if __name__ == "__main__":
     main()
