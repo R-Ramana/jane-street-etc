@@ -29,15 +29,12 @@ prod_exchange_hostname="production"
 port=25000 + (test_exchange_index if test_mode else 0)
 exchange_hostname = "test-exch-" + team_name if test_mode else prod_exchange_hostname
 
-<<<<<<< HEAD
 buy_orders = dict()
 sell_orders = dict()
 shares = dict()
 shares['BOND'] = 0
 counter = 0
 best_prices = dict()
-=======
->>>>>>> f2c0c01eeba67e94de9619c74c3c0c0dd106fce8
 stockFairPrices = {"VALBZ" : 0, "GS": 0, "MS": 0, "WFC": 0}
 
 # ~~~~~============== NETWORKING CODE ==============~~~~~
@@ -54,12 +51,7 @@ def read_from_exchange(exchange):
     return json.loads(exchange.readline())
 
 # ~~~~~============== MESSAGES CODE ==============~~~~~
-<<<<<<< HEAD
-def convert(exchange, symbol, size, dir):
-    counter += 1
-=======
 def convert(counter, exchange, symbol, size, dir):
->>>>>>> f2c0c01eeba67e94de9619c74c3c0c0dd106fce8
     payload = {
         "type": "convert",
         "order_id" : counter,
@@ -77,12 +69,7 @@ def convert_to(counter, exchange, symbol, size):
 def convert_from(counter, exchange, symbol, size):
     return convert(counter, exchange, symbol, size, "SELL")
     
-<<<<<<< HEAD
-
-def buy(counter, exchange, symbol, price, size):
-=======
 def buy(buy_orders, counter, exchange, symbol, price, size):
->>>>>>> f2c0c01eeba67e94de9619c74c3c0c0dd106fce8
     counter += 1
     
     payload = {
