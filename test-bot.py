@@ -10,7 +10,8 @@ from __future__ import print_function
 import sys
 import socket
 import json
-from collections import deque 
+from collections import deque
+from stocks import *
 
 # ~~~~~============== CONFIGURATION  ==============~~~~~
 # replace REPLACEME with your team name!
@@ -207,8 +208,8 @@ def main():
                 price = getAndUpdateStockFairPrice(message, stockFairPrices)
                 print(f'Symbol: {message["symbol"]}, {price}')
 
-                sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares)
-                buyStockLowerThanFairPrice(sell_orders, counter, exchange, message, shares)
+                sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices)
+                buyStockLowerThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices)
 
             if message['symbol'] == "XLF":
                 print(f'XLF, {getXLFFairPrice(stockFairPrices)}')

@@ -14,6 +14,7 @@ from collections import deque
 from networking import connect, write_to_exchange, read_from_exchange
 from exchange import convert_to, convert_from, buy, sell, cancel
 from bond import *
+from stocks import *
 
 # ~~~~~============== CONFIGURATION  ==============~~~~~
 # replace REPLACEME with your team name!
@@ -32,8 +33,7 @@ prod_exchange_hostname="production"
 port=25000 + (test_exchange_index if test_mode else 0)
 exchange_hostname = "test-exch-" + team_name if test_mode else prod_exchange_hostname
 
-stockFairPrices = {"VALBZ" : 0, "GS": 0, "MS": 0, "WFC": 0}
-stocks = ["VALBZ", "GS", "MS", "WFC"]
+stockFairPrices = {"GS": 0, "MS": 0, "WFC": 0}
 best_prices = dict()
 
 # ~~~~~============== MESSAGES CODE ==============~~~~~
@@ -132,6 +132,13 @@ def main():
             if message['symbol'] == 'BOND':
                 sellBondHigherThanFairPrice(sell_orders, counter, exchange, message, shares)
                 buyBondLowerThanFairPrice(buy_orders, counter, exchange, message, shares)
+            if message['symbol'] in stockFairPrices:
+                print(message)
+                price = getAndUpdateStockFairPrice(message, stockFairPrices)
+                print(f'Symbol: {message["symbol"]}, {price}')
+
+                sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices)
+                buyStockLowerThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices)
 
 if __name__ == "__main__":
     main()

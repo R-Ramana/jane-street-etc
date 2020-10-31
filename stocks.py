@@ -1,4 +1,6 @@
-def sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares):
+from exchange import sell, buy
+
+def sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices):
     
     symbol = message['symbol']
     fairPrice = getAndUpdateStockFairPrice(message, stockFairPrices)
@@ -9,7 +11,7 @@ def sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares
         print(shares)
         print("SOMETHING SOLD!")
 
-def buyStockLowerThanFairPrice(buy_orders, counter, exchange, message, shares):
+def buyStockLowerThanFairPrice(buy_orders, counter, exchange, message, shares, stockFairPrices):
 
     symbol = message['symbol']
     fairPrice = getAndUpdateStockFairPrice(message, stockFairPrices)
