@@ -100,16 +100,16 @@ def cancelPastOrders(exchange, sell_orders, buy_orders, i):
 def add_to_market(message):
     symbol = message["symbol"]
     if (len(message['buy']) > 0):
-        buy_price = message['buy'][0]
+        buy_price = message['buy'][0][0]
     elif symbol in best_prices:
-        buy_price = best_prices[symbol][0][0]
+        buy_price = best_prices[symbol][0]
     else:
         buy_price = 0
 
     if (len(message['sell']) > 0):
-        sell_price = message['sell'][0]
+        sell_price = message['sell'][0][0]
     elif symbol in best_prices:
-        sell_price = best_prices[symbol][1][0]
+        sell_price = best_prices[symbol][1]
     else:
         sell_price = 0
 
