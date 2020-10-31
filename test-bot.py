@@ -10,15 +10,14 @@ from __future__ import print_function
 import sys
 import socket
 import json
-import uuid
-import collections
+from collections import deque 
 
 # ~~~~~============== CONFIGURATION  ==============~~~~~
 # replace REPLACEME with your team name!
 team_name="NULLPOINTEREXCEPTION"
 # This variable dictates whether or not the bot is connecting to the prod
 # or test exchange. Be careful with this switch!
-test_mode = True
+test_mode = False
 
 # This setting changes which test exchange is connected to.
 # 0 is prod-like
@@ -35,10 +34,8 @@ sell_orders = dict()
 shares = dict()
 shares['BOND'] = 0
 counter = 0
+best_prices = dict()
 stockFairPrices = {"VALBZ" : 0, "GS": 0, "MS": 0, "WFC": 0}
-
-stocks = ["VALBZ", "GS", "MS", "WFC"]
-
 
 # ~~~~~============== NETWORKING CODE ==============~~~~~
 def connect():
@@ -54,23 +51,26 @@ def read_from_exchange(exchange):
     return json.loads(exchange.readline())
 
 # ~~~~~============== MESSAGES CODE ==============~~~~~
-def convert(exchange, symbol, size, dir):
+def convert(counter, exchange, symbol, size, dir):
+    counter += 1
     payload = {
         "type": "convert",
-        "order_id" : str(uuid.uuid4()),
+        "order_id" : counter,
         "symbol": symbol,
         "dir" : dir,
         "size" : size
     }
     write_to_exchange(exchange, payload)
 
-def convert_to(exchange, symbol, size):
-    convert(exchange, symbol, size, "BUY")
+    return counter
 
-def convert_from(exchange, symbol, size):
-    convert(exchange, symbol, size, "SELL")
+def convert_to(counter, exchange, symbol, size):
+    return convert(counter, exchange, symbol, size, "BUY")
+
+def convert_from(counter, exchange, symbol, size):
+    return convert(counter, exchange, symbol, size, "SELL")
     
-def buy(counter, exchange, symbol, price, size):
+def buy(buy_orders, counter, exchange, symbol, price, size):
     counter += 1
     
     payload = {
@@ -82,12 +82,12 @@ def buy(counter, exchange, symbol, price, size):
         "size": size
         }
 
-    buy_orders[symbol] = [price, size, counter]
+    buy_orders.append(counter)
     write_to_exchange(exchange, payload)
 
     return counter
 
-def sell(counter, exchange, symbol, price, size):
+def sell(sell_orders, counter, exchange, symbol, price, size):
     counter += 1
     
     payload = {
@@ -99,7 +99,7 @@ def sell(counter, exchange, symbol, price, size):
         "size": size
         }
     
-    sell_orders[symbol] = [price, size, counter]
+    sell_orders.append(counter)
     write_to_exchange(exchange, payload)
 
     return counter
@@ -132,6 +132,56 @@ def getXLFFairPrice(stockFairPrices):
 def getVALEFairPrice(stockFairPrices):
     return stockFairPrices["VALBZ"]
 
+def sellHigherThanFairPrice(sell_orders, counter, exchange, symbol, message, shares):
+    if len(message['buy']) > 0 and message['buy'][0][0] > 1000 and shares['BOND'] > 0:
+        counter = sell(sell_orders, counter, exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
+        shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
+        print(shares)
+
+def cancelPastOrders(sell_orders):
+    if len(sell_orders) > 0: sell_orders.popleft()
+
+# ~~~~~============== MAIN LOOP ==============~~~~~
+def add_to_market(message):
+    symbol = message["symbol"]
+    if (len(message['buy']) > 0):
+        buy_price = message['buy'][0]
+    elif symbol in best_prices:
+        buy_price = best_prices[symbol][0]
+    else:
+        buy_price = (0,0)
+
+    if (len(message['buy']) > 0):
+        sell_price = message['buy'][0]
+    elif symbol in best_prices:
+        sell_price = best_prices[symbol][1]
+    else:
+        sell_price = (0,0)
+
+    best_prices[symbol] = (buy_price, sell_price)   
+    
+
+def check_etf(counter, exchange, message):
+    symbol = message["symbol"]
+
+    if (symbol == "VALE" and "VALBZ" in best_prices) or (symbol == "VALBZ" and "VALE" in best_prices):
+        vale_buy_pricenum, vale_sell_pricenum = best_prices[symbol]
+        valbz_buy_pricenum, valbz_sell_pricenum = best_prices["VALBZ"]
+
+        vale_buy_price, vale_buy_num = vale_buy_pricenum
+        valbz_buy_price, valbz_buy_num = valbz_buy_pricenum
+
+        vale_sell_price, vale_sell_num = vale_sell_pricenum
+        valbz_sell_price, valbz_sell_num = valbz_sell_pricenum
+
+        vale_to_valbz_num = min(vale_sell_num, valbz_buy_num)
+        valbz_to_vale_num = min(valbz_sell_num, vale_buy_num)
+        if (valbz_to_vale_num * valbz_sell_price + 10 < valbz_to_vale_num * vale_buy_price):
+            counter = convert_to(counter, exchange, "VALE", vale_to_valbz_num)
+        elif vale_to_valbz_num * vale_sell_price + 10 < vale_to_valbz_num * valbz_buy_price:
+            counter = convert_from(counter, exchange, "VALE", vale_to_valbz_num)
+    return counter
+
 # ~~~~~============== MAIN LOOP ==============~~~~~
 
 def main():
@@ -146,29 +196,36 @@ def main():
     shares = dict()
     shares['BOND'] = 0
     counter = 0
+    buy_orders = deque
+    sell_orders = deque
     while True:
-        
         message = read_from_exchange(exchange)
-        if message['type'] == 'book' or message['type'] == 'trade':
+        if message['type'] == 'book':
             if message['symbol'] == 'BOND': print(message)
-        else: print(message)
+        elif message['type'] == 'trade': continue
+        else:
+            print(message)
+            continue
         if message['type'] == 'book':
             if message['symbol'] == 'BOND':
                 if len(message['buy']) > 0 and message['buy'][0][0] > 1000 and shares['BOND'] > 0:
-                    counter = sell(counter, exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
+                    counter = sell(sell_orders, counter, exchange, 'BOND', message['buy'][0][0], message['buy'][0][1])
                     shares['BOND'] -= message['buy'][0][1] if shares["BOND"] >= message['buy'][0][1] else shares["BOND"]
                     print(shares)
                 if len(message['sell']) > 0 and message['sell'][0][0] <= 1000:
-                    counter = buy(counter, exchange, 'BOND', message['sell'][0][0], message['sell'][0][1])
+                    counter = buy(buy_orders, counter, exchange, 'BOND', message['sell'][0][0], message['sell'][0][1])
                     shares['BOND'] += message['sell'][0][1]
                     print(shares)
+            if message['symbol'] == 'VALE' or message['symbol'] == 'VALBZ':
+                counter = check_etf(counter, exchange, message)
 
 
             if message['symbol'] in stocks:
-                print(getStockFairPrice)
+                symbol, price = getStockFairPrice()
+                print(f'{symbol}, {price}')
 
             if message['symbol'] == "XFC": 
-                print(getXLFFairPrice)
+                print(f'XLF, {getXLFFairPrice()})
 
         if(message["type"] == "close"):
             print("The round has ended")
