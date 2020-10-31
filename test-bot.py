@@ -34,7 +34,7 @@ prod_exchange_hostname="production"
 port=25000 + (test_exchange_index if test_mode else 0)
 exchange_hostname = "test-exch-" + team_name if test_mode else prod_exchange_hostname
 
-stockFairPrices = {"XLF": 0}
+stockFairPrices = {"XLF": 0, 'VALE': 0}
 best_prices = dict()
 
 # ~~~~~============== MESSAGES CODE ==============~~~~~
@@ -78,7 +78,7 @@ def main():
     shares['VALBZ'] = 0
     shares['GS'] = 0
     shares['MS'] = 0
-    shares['WFC'] = 0
+    shares['VALE'] = 0
     shares['XLF'] = 0
     counter = 0
     buy_orders = deque()
