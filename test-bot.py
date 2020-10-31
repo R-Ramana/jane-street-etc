@@ -22,13 +22,13 @@ from cancel import *
 team_name="NULLPOINTEREXCEPTION"
 # This variable dictates whether or not the bot is connecting to the prod
 # or test exchange. Be careful with this switch!
-test_mode = True
+test_mode = False
 
 # This setting changes which test exchange is connected to.
 # 0 is prod-like
 # 1 is slower
 # 2 is empty
-test_exchange_index=0
+test_exchange_index=1
 prod_exchange_hostname="production"
 
 port=25000 + (test_exchange_index if test_mode else 0)
@@ -105,12 +105,12 @@ def main():
         
         if message['type'] == 'book':
             if message['symbol'] == 'BOND':
-                sellBondHigherThanFairPrice(sell_orders, counter, exchange, message, shares)
-                buyBondLowerThanFairPrice(buy_orders, counter, exchange, message, shares)
+                counter = sellBondHigherThanFairPrice(sell_orders, counter, exchange, message, shares)
+                counter = buyBondLowerThanFairPrice(buy_orders, counter, exchange, message, shares)
             if message['symbol'] in stockFairPrices:
                 price = getAndUpdateStockFairPrice(message, stockFairPrices)
-                sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices)
-                buyStockLowerThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices)
+                counter = sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices)
+                counter = buyStockLowerThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices)
 
 if __name__ == "__main__":
     main()
