@@ -109,7 +109,7 @@ def main():
                 counter = buyBondLowerThanFairPrice(buy_orders, counter, exchange, message, shares)
             if message['symbol'] in stockFairPrices:
                 counter = sellStockHigherThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices)
-                counter = buyStockLowerThanFairPrice(sell_orders, counter, exchange, message, shares, stockFairPrices)
+                counter = buyStockLowerThanFairPrice(buy_orders, counter, exchange, message, shares, stockFairPrices)
 
 if __name__ == "__main__":
     main()
