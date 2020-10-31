@@ -244,7 +244,7 @@ def main():
                     shares['BOND'] += message['sell'][0][1]
                     print(shares)
             if message['symbol'] == 'VALE' or message['symbol'] == 'VALBZ':
-                check_ADR(buy_orders, sell_orders, shares, counter, exchange, message)
+                counter = check_ADR(buy_orders, sell_orders, shares, counter, exchange, message)
             #     if shares['VALBZ'] == 0:
             #         if message['symbol'] == 'VALBZ':
             #             counter = buy(buy_orders, counter, exchange, 'VALBZ', message['sell'][0][0], message['sell'][0][1])
