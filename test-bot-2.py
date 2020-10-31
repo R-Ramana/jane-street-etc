@@ -228,6 +228,12 @@ def main():
                     shares['BOND'] += message['sell'][0][1]
                     print(shares)
             if message['symbol'] == 'VALE' or message['symbol'] == 'VALBZ':
+                if 'VALE' in shares:
+                    print (shares)
+                    counter = convert_from(counter, exchange, 'VALE', 1)
+                elif 'VALBZ' in shares:
+                    print (shares)
+                    counter = convert_to(counter, exchange, 'VALBZ', 1)
                 counter = check_etf(counter, exchange, message)
 
         if(message["type"] == "close"):
