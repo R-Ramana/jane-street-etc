@@ -17,7 +17,7 @@ from collections import deque
 team_name="NULLPOINTEREXCEPTION"
 # This variable dictates whether or not the bot is connecting to the prod
 # or test exchange. Be careful with this switch!
-test_mode = False
+test_mode = True
 
 # This setting changes which test exchange is connected to.
 # 0 is prod-like
@@ -165,7 +165,7 @@ def check_etf(counter, exchange, message):
     symbol = message["symbol"]
 
     if (symbol == "VALE" and "VALBZ" in best_prices) or (symbol == "VALBZ" and "VALE" in best_prices):
-        vale_buy_pricenum, vale_sell_pricenum = best_prices[symbol]
+        vale_buy_pricenum, vale_sell_pricenum = best_prices["VALE"]
         valbz_buy_pricenum, valbz_sell_pricenum = best_prices["VALBZ"]
 
         vale_buy_price, vale_buy_num = vale_buy_pricenum
@@ -176,6 +176,8 @@ def check_etf(counter, exchange, message):
 
         vale_to_valbz_num = min(vale_sell_num, valbz_buy_num)
         valbz_to_vale_num = min(valbz_sell_num, vale_buy_num)
+        print(vale_to_valbz_num)
+        print(valbz_to_vale_num)
         if (valbz_to_vale_num * valbz_sell_price + 10 < valbz_to_vale_num * vale_buy_price):
             counter = convert_to(counter, exchange, "VALE", vale_to_valbz_num)
         elif vale_to_valbz_num * vale_sell_price + 10 < vale_to_valbz_num * valbz_buy_price:
@@ -196,11 +198,13 @@ def main():
     shares = dict()
     shares['BOND'] = 0
     counter = 0
-    buy_orders = deque
-    sell_orders = deque
+    buy_orders = deque()
+    sell_orders = deque()
     while True:
         message = read_from_exchange(exchange)
         if message['type'] == 'book':
+            add_to_market(message)
+            print(best_prices)
             if message['symbol'] == 'BOND': print(message)
         elif message['type'] == 'trade': continue
         else:
