@@ -100,18 +100,18 @@ def cancelPastOrders(exchange, sell_orders, buy_orders, i):
 def add_to_market(message):
     symbol = message["symbol"]
     if (len(message['buy']) > 0):
-        buy_price = message['buy'][0]
+        buy_price = message['buy'][0][0]
     elif symbol in best_prices:
         buy_price = best_prices[symbol][0]
     else:
-        buy_price = (0,0)
+        buy_price = 0
 
-    if (len(message['buy']) > 0):
-        sell_price = message['buy'][0]
+    if (len(message['sell']) > 0):
+        sell_price = message['sell'][0][0]
     elif symbol in best_prices:
         sell_price = best_prices[symbol][1]
     else:
-        sell_price = (0,0)
+        sell_price = 0
 
     best_prices[symbol] = (buy_price, sell_price)   
 
@@ -143,7 +143,7 @@ def main():
 
         if message['type'] == 'book':
             add_to_market(message)
-            print(best_prices)
+            if message['symbol'] == 'BOND': print(best_prices)
         elif message['type'] == 'trade': continue
         else:
             print(message)
@@ -153,7 +153,6 @@ def main():
             if message['symbol'] == 'BOND':
                 sellBondHigherThanFairPrice(sell_orders, counter, exchange, message, shares)
                 buyBondLowerThanFairPrice(buy_orders, counter, exchange, message, shares)
-        
 
 if __name__ == "__main__":
     main()
