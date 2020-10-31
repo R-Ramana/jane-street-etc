@@ -10,6 +10,7 @@ from __future__ import print_function
 import sys
 import socket
 import json
+import uuid
 
 # ~~~~~============== CONFIGURATION  ==============~~~~~
 # replace REPLACEME with your team name!
@@ -41,6 +42,22 @@ def write_to_exchange(exchange, obj):
 def read_from_exchange(exchange):
     return json.loads(exchange.readline())
 
+# ~~~~~============== NETWORKING CODE ==============~~~~~
+def convert(exchange, symbol, size, dir):
+    payload = {
+        "type": "convert",
+        "order_id" : str(uuid.uuid4()),
+        "symbol": symbol,
+        "dir" : dir,
+        "size" : size
+    }
+    write_to_exchange(exchange, payload)
+
+def convert_to(exchange, symbol, size):
+    convert(exchange, symbol, size, "BUY")
+
+def convert_from(exchange, symbol, size):
+    convert(exchange, symbol, size, "SELL")
 
 # ~~~~~============== MAIN LOOP ==============~~~~~
 
