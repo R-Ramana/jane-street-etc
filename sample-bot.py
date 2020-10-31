@@ -99,7 +99,12 @@ def main():
     sell_orders = deque()
     i = 0
     while True:
-        i = cancelPastOrders(exchange, sell_orders, buy_orders, i)
+        i += 1
+        if i > 10:
+            print(stockFairPrices)
+            print(best_prices)
+            i = 0
+        cancelPastOrders(exchange, sell_orders, buy_orders, i)
         message = read_from_exchange(exchange)
         if(message["type"] == "close"):
             print("The round has ended")
@@ -107,7 +112,7 @@ def main():
 
         if message['type'] == 'book':
             add_to_market(message)
-            if message['symbol'] == 'BOND' or message['symbol'] in stockFairPrices: print(best_prices)
+            # if message['symbol'] == 'BOND' or message['symbol'] in stockFairPrices: print(best_prices)
         elif message['type'] == 'trade': continue
         else:
             print(message)
